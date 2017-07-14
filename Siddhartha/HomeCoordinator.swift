@@ -9,7 +9,7 @@
 import UIKit
 
 protocol HomeCoordinatorDelegate: HandleSegueDelegate {
-    func goToRandomCity()
+    func naviagateToRandomCityScene()
 }
 
 class HomeCoordinator: Coordinator {
@@ -38,12 +38,37 @@ class HomeCoordinator: Coordinator {
     }
 }
 
+
+extension HomeCoordinator: HandleSegueDelegate {
+    func handleSegue(segue: UIStoryboardSegue) {
+       
+        if segue.identifier == "showHomeNavScene" {
+            
+            let storyboard = UIStoryboard(name: "Home", bundle: nil)
+            if let nav = storyboard.instantiateInitialViewController() as? UINavigationController {
+                let vc = nav.viewControllers.first as! HomeViewController
+                vc.test()
+                var viewModel =  HomeViewModel()
+                viewModel.delegate = self
+                viewModel.viewController = vc
+                vc.viewModel = viewModel
+                vc.coordinationDelegate = self
+            }
+        }
+    }
+}
+
+
+
 extension HomeCoordinator: CoordinationDelegate {
     func prepareForSegue(segue: UIStoryboardSegue) {
-        if segue.identifier == "showCityList" {
+        if segue.identifier == "showCityListScene" {
             delegate?.handleSegue(segue: segue)
         }
-        if segue.identifier == "HomeToSettings" {
+        if segue.identifier == "showCounterScene" {
+            delegate?.handleSegue(segue: segue)
+        }
+        if segue.identifier == "showSettingsScene" {
             let vc = segue.destination as! SettingsViewController
             var viewModel =  SettingsViewModel()
             viewModel.viewController = vc
@@ -51,52 +76,27 @@ extension HomeCoordinator: CoordinationDelegate {
             vc.coordinationDelegate = self
             vc.viewModel = viewModel
         }
-        if segue.identifier == "SettingstoGuide" {
-            
-            let vc = segue.destination as! HomeViewController
-            vc.test()
-            var viewModel =  HomeViewModel()
-            viewModel.viewController = vc
-            viewModel.delegate = self
-            vc.coordinationDelegate = self
-            vc.viewModel = viewModel
-            
-//            let storyboard = UIStoryboard(name: "Home", bundle: nil)
-//            if let nav = storyboard.instantiateInitialViewController() as? UINavigationController {
-//                let vc = nav.viewControllers.first as! HomeViewController
-//                vc.test()
-//                var viewModel =  HomeViewModel()
-//                viewModel.viewController = vc
-//                viewModel.delegate = self
-//                vc.viewModel = viewModel
-//                vc.coordinationDelegate = self
-//            }
-
-        }
-
     }
 }
 
+
+
 extension HomeCoordinator: HomeViewModelDelegate {
     
-    func homeViewModelDidSelectGoToCityList(viewController: UIViewController) {
-        viewController.performSegue(withIdentifier: "showCityList", sender: viewController)
+    func homeViewModelNaviagateToCityListScene(viewController: UIViewController) {
+        viewController.performSegue(withIdentifier: "showCityListScene", sender: viewController)
     }
     
-    func homeViewModelDidSelectGoToRandomCity() {
-        delegate?.goToRandomCity()
+    func homeViewModelNaviagateToRandomCityScene() {
+        delegate?.naviagateToRandomCityScene()
     }
     
-    func homeViewModelNaviagateToSettingsScene(viewController: UIViewController){
-//        viewController.performSegue(withIdentifier: "guideToSettings", sender: viewController)
+    func homeViewModelNaviagateToCounterScene(viewController: UIViewController){
+        viewController.performSegue(withIdentifier: "showCounterScene", sender: viewController)
     }
 }
 
 extension HomeCoordinator: SettingsViewModelDelegate {
 
-
-    func homeViewModelNaviagateToGuideScene(viewController: UIViewController){
-//        viewController.performSegue(withIdentifier: "SettingstoGuide", sender: viewController)
-    }
 }
 

@@ -11,8 +11,6 @@ import UIKit
 
 class SettingsViewController: UIViewController, Coordinated
 {
-//    @IBOutlet weak var pickCityButton: UIButton!
-//    @IBOutlet weak var randomPickCityButton: UIButton!
     
     var viewModel: SettingsViewModel?
     var coordinationDelegate: CoordinationDelegate?
@@ -22,16 +20,4 @@ class SettingsViewController: UIViewController, Coordinated
     }
 
     
-    @IBAction func BackwardsButtonClicked(_ sender: UIButton) {
-        viewModel?.navigateToGuideScene()
-    }
-    
-    
-//    @IBAction func pickCityButtonClicked(_ sender: Any) {
-//        print("testController")
-//    }
-//
-//    @IBAction func randomPickButtonClicked(_ sender: Any) {
-//        viewModel?.didSelectGoToRandomCity()
-//    }
 }

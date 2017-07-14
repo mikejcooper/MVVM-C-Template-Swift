@@ -12,6 +12,7 @@ class AppCoordinator: Coordinator
 {
     fileprivate let kHomeCoordinator: String  = "kHomeCoordinator"
     fileprivate let kCityCoordinator: String  = "kCityCoordinator"
+    fileprivate let kCounterCoordinator: String  = "kCounterCoordinator"
     
     var window: UIWindow
     var coordinators = [String: Coordinator]()
@@ -39,19 +40,39 @@ class AppCoordinator: Coordinator
 extension AppCoordinator: HandleSegueDelegate
 {
     func handleSegue(segue: UIStoryboardSegue) {
-        if segue.identifier == "showCityList" {
+        if segue.identifier == "showCityListScene" {
             let cityCoordinator = CityCoordinator(window: window)
             coordinators[kCityCoordinator] = cityCoordinator
             cityCoordinator.delegate = self
             cityCoordinator.handleSegue(segue: segue)
+            
+            // start method of Coodinator sets rootViewController therefore previous navigation flow will be reset i.e. back button from pop segue will not appear. 
+//             cityCoordinator.start()
         }
+        if segue.identifier == "showCounterScene" {
+            let counterCoordinator = CounterCoordinator(window: window)
+            coordinators[kCounterCoordinator] = counterCoordinator
+            counterCoordinator.delegate = self
+            counterCoordinator.start()
+//            counterCoordinator.handleSegue(segue: segue)
+        }
+        
+        if segue.identifier == "showHomeNavScene" {
+            let homeCoordinator = HomeCoordinator(window: window)
+            coordinators[kHomeCoordinator] = homeCoordinator
+            homeCoordinator.delegate = self
+            homeCoordinator.start()
+
+//            homeCoordinator.handleSegue(segue: segue)
+        }
+
     }
 }
 
 
 extension AppCoordinator: HomeCoordinatorDelegate
 {
-    func goToRandomCity()
+    func naviagateToRandomCityScene()
     {
         let cityCoordinator = CityCoordinator(window: window)
         coordinators[kCityCoordinator] = cityCoordinator
@@ -62,6 +83,11 @@ extension AppCoordinator: HomeCoordinatorDelegate
 
 
 extension AppCoordinator: CityCoordinatorDelegate
+{
+    
+}
+
+extension AppCoordinator: CounterCoordinatorDelegate
 {
     
 }

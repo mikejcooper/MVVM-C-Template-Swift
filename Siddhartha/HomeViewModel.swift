@@ -9,11 +9,12 @@
 import Foundation
 import UIKit
 
+// Delegate subscribed to by parent Coorindinator
 protocol HomeViewModelDelegate: class
 {
-    func homeViewModelDidSelectGoToCityList(viewController: UIViewController)
-    func homeViewModelDidSelectGoToRandomCity()
-    func homeViewModelNaviagateToSettingsScene(viewController: UIViewController)
+    func homeViewModelNaviagateToCityListScene(viewController: UIViewController)
+    func homeViewModelNaviagateToRandomCityScene()
+    func homeViewModelNaviagateToCounterScene(viewController: UIViewController)
 }
 
 class HomeViewModel
@@ -21,16 +22,16 @@ class HomeViewModel
     weak var delegate: HomeViewModelDelegate?
     weak var viewController: HomeViewController?
     
-    func didSelectGoToCityList(){
-        delegate?.homeViewModelDidSelectGoToCityList(viewController: self.viewController!)
+    func navigateToCityListScene(){
+        delegate?.homeViewModelNaviagateToCityListScene(viewController: self.viewController!)
     }
     
-    func didSelectGoToRandomCity(){
-        delegate?.homeViewModelDidSelectGoToRandomCity()
+    func navigateToRandomCityScene(){
+        delegate?.homeViewModelNaviagateToRandomCityScene()
     }
     
-    func navigateToSettingsScene(){
-        delegate?.homeViewModelNaviagateToSettingsScene(viewController: self.viewController!)
+    func navigateToCounterScene(){
+        delegate?.homeViewModelNaviagateToCounterScene(viewController: self.viewController!)
     }
 }
 

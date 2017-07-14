@@ -28,12 +28,12 @@ class CityCoordinator: Coordinator {
     func start()
     {
         let storyboard = UIStoryboard(name: "City", bundle: nil)
-        if let vc = storyboard.instantiateViewController(withIdentifier: "list") as? CityListViewController {
-            var viewModel =  CityListViewModel()
-            viewModel.delegate = self
+        if let vc = storyboard.instantiateInitialViewController() as? CityListViewController {
+            var viewModel =  CityListViewModel.init()
             viewModel.viewController = vc
-            vc.viewModel = viewModel
+            viewModel.delegate = self
             vc.coordinationDelegate = self
+            vc.viewModel = viewModel
             let nav = UINavigationController.init(rootViewController: vc)
             window.rootViewController = nav
         }
@@ -41,7 +41,7 @@ class CityCoordinator: Coordinator {
     
     func presentRandomCity() {
         let storyboard = UIStoryboard(name: "City", bundle: nil)
-        if let vc = storyboard.instantiateViewController(withIdentifier: "detail") as? CityDetailViewController,
+        if let vc = storyboard.instantiateViewController(withIdentifier: "CityDetail") as? CityDetailViewController,
             let nav = window.rootViewController
         {
             let viewModel =  CityDetailViewModel.init(city: Cities().randomCity())
@@ -55,7 +55,7 @@ class CityCoordinator: Coordinator {
 
 extension CityCoordinator: HandleSegueDelegate {
     func handleSegue(segue: UIStoryboardSegue) {
-        if segue.identifier == "showCityList" {
+        if segue.identifier == "showCityListScene" {
             let vc = segue.destination as! CityListViewController
             var viewModel =  CityListViewModel.init()
             viewModel.viewController = vc
@@ -68,7 +68,7 @@ extension CityCoordinator: HandleSegueDelegate {
 
 extension CityCoordinator: CoordinationDelegate {
     func prepareForSegue(segue: UIStoryboardSegue) {
-        if segue.identifier == "showDetail" {
+        if segue.identifier == "showCityDetailScene" {
             let dest = segue.destination as! CityDetailViewController
             var viewModel = CityDetailViewModel.init(city: selectedCity!)
             dest.viewModel = viewModel
@@ -81,7 +81,7 @@ extension CityCoordinator: CoordinationDelegate {
 extension CityCoordinator: CityListViewModelDelegate {
     func selectCity(viewController: UIViewController , city: City) {
         selectedCity = city
-        viewController.performSegue(withIdentifier: "showDetail", sender: viewController)
+        viewController.performSegue(withIdentifier: "showCityDetailScene", sender: viewController)
     }
 }
 

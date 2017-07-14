@@ -10,10 +10,10 @@
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
-        <!--Guide-->
+        <!--Home-->
         <scene sceneID="tne-QT-ifu">
             <objects>
-                <viewController storyboardIdentifier="home" id="BYZ-38-t0r" customClass="HomeViewController" customModule="Siddhartha" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="home" title="Home" id="BYZ-38-t0r" customClass="HomeViewController" customModule="Siddhartha" customModuleProvider="target" sceneMemberID="viewController">
                     <layoutGuides>
                         <viewControllerLayoutGuide type="top" id="y3c-jy-aDJ"/>
                         <viewControllerLayoutGuide type="bottom" id="wfy-db-euE"/>
@@ -31,25 +31,6 @@
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="KFQ-lI-zqe">
-                                <rect key="frame" x="29" y="280" width="346" height="60"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="60" id="JgX-r8-82Y"/>
-                                </constraints>
-                                <fontDescription key="fontDescription" type="system" pointSize="25"/>
-                                <state key="normal" title="Random Pick a City"/>
-                                <connections>
-                                    <action selector="randomPickButtonClicked:" destination="BYZ-38-t0r" eventType="touchUpInside" id="TFb-0l-0is"/>
-                                </connections>
-                            </button>
-                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="jhT-1y-0XS">
-                                <rect key="frame" x="159" y="464" width="57" height="30"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <state key="normal" title="Settings"/>
-                                <connections>
-                                    <segue destination="58w-HH-ZPv" kind="show" identifier="HomeToSettings" id="K9t-Jo-0A1"/>
-                                </connections>
-                            </button>
                             <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="9VR-z1-21i">
                                 <rect key="frame" x="42" y="168" width="317" height="60"/>
                                 <constraints>
@@ -59,6 +40,33 @@
                                 <state key="normal" title="Pick a City"/>
                                 <connections>
                                     <action selector="pickCityButtonClicked:" destination="BYZ-38-t0r" eventType="touchUpInside" id="l6k-tb-PNA"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="jhT-1y-0XS">
+                                <rect key="frame" x="159" y="591" width="57" height="30"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <state key="normal" title="Settings"/>
+                                <connections>
+                                    <segue destination="58w-HH-ZPv" kind="show" identifier="showSettingsScene" id="K9t-Jo-0A1"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="648-Go-Og4">
+                                <rect key="frame" x="160" y="513" width="56" height="30"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <state key="normal" title="Counter"/>
+                                <connections>
+                                    <action selector="counterButtonClicked:" destination="BYZ-38-t0r" eventType="touchUpInside" id="Loo-zI-Z8a"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="KFQ-lI-zqe">
+                                <rect key="frame" x="29" y="236" width="346" height="60"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="60" id="JgX-r8-82Y"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" pointSize="25"/>
+                                <state key="normal" title="Random Pick a City"/>
+                                <connections>
+                                    <action selector="randomPickButtonClicked:" destination="BYZ-38-t0r" eventType="touchUpInside" id="TFb-0l-0is"/>
                                 </connections>
                             </button>
                         </subviews>
@@ -80,7 +88,8 @@
                     <connections>
                         <outlet property="pickCityButton" destination="9VR-z1-21i" id="brA-Z4-rqu"/>
                         <outlet property="randomPickCityButton" destination="KFQ-lI-zqe" id="5LV-IW-LFi"/>
-                        <segue destination="dJU-X7-d6C" kind="show" identifier="showCityList" id="Ep1-0p-NFQ"/>
+                        <segue destination="dJU-X7-d6C" kind="show" identifier="showCityListScene" id="Ep1-0p-NFQ"/>
+                        <segue destination="QNy-1y-bzc" kind="showDetail" identifier="showCounterScene" action="showViewController:sender:" id="avT-VE-ErD"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
@@ -93,13 +102,21 @@
                 <viewControllerPlaceholder storyboardName="City" id="dJU-X7-d6C" sceneMemberID="viewController"/>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="83D-bB-1fP" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1668" y="123.23838080959521"/>
+            <point key="canvasLocation" x="1595" y="-87"/>
         </scene>
-        <!--Navigation Controller-->
+        <!--Counter-->
+        <scene sceneID="6eY-nZ-pfa">
+            <objects>
+                <viewControllerPlaceholder storyboardName="Counter" id="QNy-1y-bzc" sceneMemberID="viewController"/>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="B3z-aq-Z6f" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1614" y="-3"/>
+        </scene>
+        <!--Home Navigation-->
         <scene sceneID="arH-Si-7bi">
             <objects>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="niH-MA-4Dp" userLabel="First Responder" sceneMemberID="firstResponder"/>
-                <navigationController automaticallyAdjustsScrollViewInsets="NO" id="RDv-KG-pv2" sceneMemberID="viewController">
+                <navigationController title="Home Navigation" automaticallyAdjustsScrollViewInsets="NO" id="RDv-KG-pv2" sceneMemberID="viewController">
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="OVP-fz-QJz">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="44"/>
@@ -137,7 +154,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="UlM-hl-05s" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1054" y="958"/>
+            <point key="canvasLocation" x="570" y="938"/>
         </scene>
     </scenes>
 </document>

@@ -11,9 +11,7 @@ import UIKit
 
 protocol SettingsViewModelDelegate: class
 {
-//    func homeViewModelDidSelectGoToCityList(viewController: UIViewController)
-//    func homeViewModelDidSelectGoToRandomCity()
-    func homeViewModelNaviagateToGuideScene(viewController: UIViewController)
+
 }
 
 struct SettingsViewModel
@@ -22,17 +20,5 @@ struct SettingsViewModel
     weak var viewController: SettingsViewController?
     
     
-    
-//    func didSelectGoToCityList(){
-//        delegate?.homeViewModelDidSelectGoToCityList(viewController: self.viewController!)
-//    }
-//    
-//    func didSelectGoToRandomCity(){
-//        delegate?.homeViewModelDidSelectGoToRandomCity()
-//    }
-//    
-    func navigateToGuideScene(){
-        delegate?.homeViewModelNaviagateToGuideScene(viewController: self.viewController!)
-    }
 }
 

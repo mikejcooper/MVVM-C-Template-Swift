@@ -13,7 +13,7 @@
         <!--City List-->
         <scene sceneID="JUA-Ce-KJX">
             <objects>
-                <tableViewController storyboardIdentifier="list" id="Izq-1r-7tz" customClass="CityListViewController" customModule="Siddhartha" customModuleProvider="target" sceneMemberID="viewController">
+                <tableViewController storyboardIdentifier="CityList" useStoryboardIdentifierAsRestorationIdentifier="YES" id="Izq-1r-7tz" customClass="CityListViewController" customModule="Siddhartha" customModuleProvider="target" sceneMemberID="viewController">
                     <tableView key="view" clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="44" sectionHeaderHeight="28" sectionFooterHeight="28" id="Gab-fi-vva">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -25,7 +25,7 @@
                     </tableView>
                     <navigationItem key="navigationItem" title="City List" id="nkY-Qn-Ix9"/>
                     <connections>
-                        <segue destination="cpF-7M-SfM" kind="show" identifier="showDetail" id="Awp-h6-Zzn"/>
+                        <segue destination="cpF-7M-SfM" kind="show" identifier="showCityDetailScene" id="Awp-h6-Zzn"/>
                     </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="8ff-3i-dNY" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -35,7 +35,7 @@
         <!--City Detail-->
         <scene sceneID="l9E-fz-g7O">
             <objects>
-                <viewController storyboardIdentifier="detail" id="cpF-7M-SfM" customClass="CityDetailViewController" customModule="Siddhartha" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="CityDetail" id="cpF-7M-SfM" customClass="CityDetailViewController" customModule="Siddhartha" customModuleProvider="target" sceneMemberID="viewController">
                     <layoutGuides>
                         <viewControllerLayoutGuide type="top" id="YM2-A8-HG8"/>
                         <viewControllerLayoutGuide type="bottom" id="WcW-go-1OH"/>

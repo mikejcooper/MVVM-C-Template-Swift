@@ -28,16 +28,16 @@ class HomeViewController: UIViewController, Coordinated
     }
     
     @IBAction func pickCityButtonClicked(_ sender: Any) {
-        viewModel?.didSelectGoToCityList()
+        viewModel?.navigateToCityListScene()
     }
     
     @IBAction func randomPickButtonClicked(_ sender: Any) {
-        viewModel?.didSelectGoToRandomCity()
+        viewModel?.navigateToRandomCityScene()
         print( teststring )
     }
     
-    @IBAction func SettingsButtonClicked(_ sender: Any) {
-        viewModel?.navigateToSettingsScene()
+    @IBAction func counterButtonClicked(_ sender: Any) {
+        viewModel?.navigateToCounterScene()
     }
 
 }
