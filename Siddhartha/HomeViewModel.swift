@@ -13,7 +13,7 @@ protocol HomeViewModelDelegate: class
 {
     func homeViewModelDidSelectGoToCityList(viewController: UIViewController)
     func homeViewModelDidSelectGoToRandomCity()
-    func homeViewModelNaviagateToScreenAScene(viewController: UIViewController)
+    func homeViewModelNaviagateToSettingsScene(viewController: UIViewController)
 }
 
 class HomeViewModel
@@ -29,8 +29,8 @@ class HomeViewModel
         delegate?.homeViewModelDidSelectGoToRandomCity()
     }
     
-    func navigateToScreenAScene(){
-        delegate?.homeViewModelNaviagateToScreenAScene(viewController: self.viewController!)
+    func navigateToSettingsScene(){
+        delegate?.homeViewModelNaviagateToSettingsScene(viewController: self.viewController!)
     }
 }
 

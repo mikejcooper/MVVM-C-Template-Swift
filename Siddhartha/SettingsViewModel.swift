@@ -1,5 +1,5 @@
 //
-//  ScreenAModel.swift
+//  SettingsModel.swift
 //  Siddhartha
 //
 //  Created by Mike Cooper on 14/07/2017.
@@ -9,17 +9,17 @@
 import Foundation
 import UIKit
 
-protocol ScreenAViewModelDelegate: class
+protocol SettingsViewModelDelegate: class
 {
 //    func homeViewModelDidSelectGoToCityList(viewController: UIViewController)
 //    func homeViewModelDidSelectGoToRandomCity()
     func homeViewModelNaviagateToGuideScene(viewController: UIViewController)
 }
 
-struct ScreenAViewModel
+struct SettingsViewModel
 {
-    weak var delegate: ScreenAViewModelDelegate?
-    weak var viewController: ScreenAViewController?
+    weak var delegate: SettingsViewModelDelegate?
+    weak var viewController: SettingsViewController?
     
     
     

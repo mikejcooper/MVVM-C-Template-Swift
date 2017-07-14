@@ -9,12 +9,12 @@
 import Foundation
 import UIKit
 
-class ScreenAViewController: UIViewController, Coordinated
+class SettingsViewController: UIViewController, Coordinated
 {
 //    @IBOutlet weak var pickCityButton: UIButton!
 //    @IBOutlet weak var randomPickCityButton: UIButton!
     
-    var viewModel: ScreenAViewModel?
+    var viewModel: SettingsViewModel?
     var coordinationDelegate: CoordinationDelegate?
     
     override func viewDidLoad(){

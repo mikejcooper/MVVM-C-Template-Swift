@@ -24,10 +24,10 @@
 		C616C8461F17ACB2007DABF7 /* CityDetailViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C616C8451F17ACB2007DABF7 /* CityDetailViewModel.swift */; };
 		C616C8481F17ACC5007DABF7 /* CityDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C616C8471F17ACC5007DABF7 /* CityDetailViewController.swift */; };
 		C616C8501F17AE42007DABF7 /* Storyboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C616C84F1F17AE42007DABF7 /* Storyboard.storyboard */; };
-		C616C8581F17B8FC007DABF7 /* ScreenAController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C616C8571F17B8FC007DABF7 /* ScreenAController.swift */; };
+		C616C8581F17B8FC007DABF7 /* SettingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C616C8571F17B8FC007DABF7 /* SettingsViewController.swift */; };
 		C616C85B1F17C10D007DABF7 /* City.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C616C8591F17C10D007DABF7 /* City.storyboard */; };
 		C616C85C1F17C10D007DABF7 /* Home.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = C616C85A1F17C10D007DABF7 /* Home.storyboard */; };
-		C61C4F541F18BFE500CCA7C5 /* ScreenAViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C61C4F531F18BFE500CCA7C5 /* ScreenAViewModel.swift */; };
+		C61C4F541F18BFE500CCA7C5 /* SettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C61C4F531F18BFE500CCA7C5 /* SettingsViewModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -71,10 +71,10 @@
 		C616C8451F17ACB2007DABF7 /* CityDetailViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CityDetailViewModel.swift; sourceTree = "<group>"; };
 		C616C8471F17ACC5007DABF7 /* CityDetailViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CityDetailViewController.swift; sourceTree = "<group>"; };
 		C616C84F1F17AE42007DABF7 /* Storyboard.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = Storyboard.storyboard; sourceTree = "<group>"; };
-		C616C8571F17B8FC007DABF7 /* ScreenAController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ScreenAController.swift; sourceTree = "<group>"; };
+		C616C8571F17B8FC007DABF7 /* SettingsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsViewController.swift; sourceTree = "<group>"; };
 		C616C8591F17C10D007DABF7 /* City.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = City.storyboard; sourceTree = "<group>"; };
 		C616C85A1F17C10D007DABF7 /* Home.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = Home.storyboard; sourceTree = "<group>"; };
-		C61C4F531F18BFE500CCA7C5 /* ScreenAViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ScreenAViewModel.swift; sourceTree = "<group>"; };
+		C61C4F531F18BFE500CCA7C5 /* SettingsViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsViewModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -215,7 +215,7 @@
 			isa = PBXGroup;
 			children = (
 				C616C8381F17A9D7007DABF7 /* HomeViewController.swift */,
-				C616C8571F17B8FC007DABF7 /* ScreenAController.swift */,
+				C616C8571F17B8FC007DABF7 /* SettingsViewController.swift */,
 			);
 			name = Home;
 			sourceTree = "<group>";
@@ -224,7 +224,7 @@
 			isa = PBXGroup;
 			children = (
 				C616C83A1F17A9F1007DABF7 /* HomeViewModel.swift */,
-				C61C4F531F18BFE500CCA7C5 /* ScreenAViewModel.swift */,
+				C61C4F531F18BFE500CCA7C5 /* SettingsViewModel.swift */,
 			);
 			name = Home;
 			sourceTree = "<group>";
@@ -402,7 +402,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C61C4F541F18BFE500CCA7C5 /* ScreenAViewModel.swift in Sources */,
+				C61C4F541F18BFE500CCA7C5 /* SettingsViewModel.swift in Sources */,
 				C616C8351F17A4FD007DABF7 /* AppCoordinator.swift in Sources */,
 				C616C83D1F17ABB0007DABF7 /* CityCoordinator.swift in Sources */,
 				C616C83B1F17A9F1007DABF7 /* HomeViewModel.swift in Sources */,
@@ -411,7 +411,7 @@
 				C616C8441F17AC93007DABF7 /* CityListViewController.swift in Sources */,
 				C616C8421F17AC76007DABF7 /* CityListViewModel.swift in Sources */,
 				C616C8371F17A5D6007DABF7 /* HomeCoordinator.swift in Sources */,
-				C616C8581F17B8FC007DABF7 /* ScreenAController.swift in Sources */,
+				C616C8581F17B8FC007DABF7 /* SettingsViewController.swift in Sources */,
 				C616C83F1F17ABFD007DABF7 /* CityModel.swift in Sources */,
 				C616C8331F17A4E1007DABF7 /* CoordinatorProtocol.swift in Sources */,
 				C616C7E01F1663AE007DABF7 /* AppDelegate.swift in Sources */,

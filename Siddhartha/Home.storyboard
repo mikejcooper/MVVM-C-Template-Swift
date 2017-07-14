@@ -22,8 +22,8 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="City Guide" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="EOF-ZT-h60">
-                                <rect key="frame" x="29" y="82" width="317" height="55"/>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="City Guide" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="EOF-ZT-h60">
+                                <rect key="frame" x="42" y="78" width="317" height="55"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="55" id="xo0-Dl-O2g"/>
                                 </constraints>
@@ -31,19 +31,8 @@
                                 <nil key="textColor"/>
                                 <nil key="highlightedColor"/>
                             </label>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="9VR-z1-21i">
-                                <rect key="frame" x="29" y="185" width="317" height="60"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="60" id="Dv4-O6-mr4"/>
-                                </constraints>
-                                <fontDescription key="fontDescription" type="system" pointSize="25"/>
-                                <state key="normal" title="Pick a City"/>
-                                <connections>
-                                    <action selector="pickCityButtonClicked:" destination="BYZ-38-t0r" eventType="touchUpInside" id="l6k-tb-PNA"/>
-                                </connections>
-                            </button>
-                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="KFQ-lI-zqe">
-                                <rect key="frame" x="29" y="280" width="317" height="60"/>
+                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="KFQ-lI-zqe">
+                                <rect key="frame" x="29" y="280" width="346" height="60"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="60" id="JgX-r8-82Y"/>
                                 </constraints>
@@ -54,12 +43,22 @@
                                 </connections>
                             </button>
                             <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="jhT-1y-0XS">
-                                <rect key="frame" x="158" y="464" width="58" height="30"/>
+                                <rect key="frame" x="159" y="464" width="57" height="30"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <state key="normal" title="ScreenA"/>
+                                <state key="normal" title="Settings"/>
                                 <connections>
-                                    <action selector="screenAButtonClicked:" destination="BYZ-38-t0r" eventType="touchDown" id="eAT-hv-f9J"/>
-                                    <segue destination="UZ9-aY-acd" kind="show" identifier="guideToScreenA" id="1eU-XY-7ch"/>
+                                    <segue destination="58w-HH-ZPv" kind="show" identifier="HomeToSettings" id="K9t-Jo-0A1"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="9VR-z1-21i">
+                                <rect key="frame" x="42" y="168" width="317" height="60"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="60" id="Dv4-O6-mr4"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="system" pointSize="25"/>
+                                <state key="normal" title="Pick a City"/>
+                                <connections>
+                                    <action selector="pickCityButtonClicked:" destination="BYZ-38-t0r" eventType="touchUpInside" id="l6k-tb-PNA"/>
                                 </connections>
                             </button>
                         </subviews>
@@ -86,44 +85,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1055" y="180"/>
-        </scene>
-        <!--ScreenA-->
-        <scene sceneID="QVP-NJ-8Rn">
-            <objects>
-                <viewController title="ScreenA" id="UZ9-aY-acd" customClass="ScreenAViewController" customModule="Siddhartha" customModuleProvider="target" sceneMemberID="viewController">
-                    <layoutGuides>
-                        <viewControllerLayoutGuide type="top" id="6C1-CC-YeS"/>
-                        <viewControllerLayoutGuide type="bottom" id="Kt5-uC-Jww"/>
-                    </layoutGuides>
-                    <view key="view" contentMode="scaleToFill" id="NJe-m5-u67">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <subviews>
-                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="A7z-8v-0EJ">
-                                <rect key="frame" x="159" y="127" width="56" height="209"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <state key="normal" title="Forward"/>
-                                <connections>
-                                    <action selector="TestButtonClicked:" destination="UZ9-aY-acd" eventType="touchDown" id="IpC-na-Abz"/>
-                                </connections>
-                            </button>
-                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="l0J-CZ-fKs">
-                                <rect key="frame" x="145" y="429" width="75" height="30"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <state key="normal" title="Backwards"/>
-                                <connections>
-                                    <action selector="BackwardsButtonClicked:" destination="UZ9-aY-acd" eventType="touchDown" id="ewx-pl-6I9"/>
-                                    <segue destination="BYZ-38-t0r" kind="show" identifier="screenAtoGuide" id="skO-ew-DVy"/>
-                                </connections>
-                            </button>
-                        </subviews>
-                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                    </view>
-                </viewController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="lRE-oh-Ays" userLabel="First Responder" sceneMemberID="firstResponder"/>
-            </objects>
-            <point key="canvasLocation" x="266" y="945"/>
+            <point key="canvasLocation" x="1053.5999999999999" y="179.46026986506749"/>
         </scene>
         <!--City-->
         <scene sceneID="UVe-of-7NO">
@@ -136,6 +98,7 @@
         <!--Navigation Controller-->
         <scene sceneID="arH-Si-7bi">
             <objects>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="niH-MA-4Dp" userLabel="First Responder" sceneMemberID="firstResponder"/>
                 <navigationController automaticallyAdjustsScrollViewInsets="NO" id="RDv-KG-pv2" sceneMemberID="viewController">
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="OVP-fz-QJz">
@@ -147,12 +110,34 @@
                         <segue destination="BYZ-38-t0r" kind="relationship" relationship="rootViewController" id="UN1-sK-06I"/>
                     </connections>
                 </navigationController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="niH-MA-4Dp" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="117.59999999999999" y="123.68815592203899"/>
         </scene>
+        <!--Settings-->
+        <scene sceneID="Gq1-LC-6jc">
+            <objects>
+                <viewController title="Settings" id="58w-HH-ZPv" customClass="SettingsViewController" customModule="Siddhartha" customModuleProvider="target" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="Ngl-aP-84L"/>
+                        <viewControllerLayoutGuide type="bottom" id="ABJ-ZK-IYB"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="fpL-fJ-HUN">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="2Ra-K4-gjc">
+                                <rect key="frame" x="26" y="105" width="46" height="30"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <state key="normal" title="Button"/>
+                            </button>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                    </view>
+                    <navigationItem key="navigationItem" title="City Detail" id="TIb-Ip-TqI"/>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="UlM-hl-05s" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1054" y="958"/>
+        </scene>
     </scenes>
-    <inferredMetricsTieBreakers>
-        <segue reference="skO-ew-DVy"/>
-    </inferredMetricsTieBreakers>
 </document>

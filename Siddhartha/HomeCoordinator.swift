@@ -27,6 +27,7 @@ class HomeCoordinator: Coordinator {
         let storyboard = UIStoryboard(name: "Home", bundle: nil)
         if let nav = storyboard.instantiateInitialViewController() as? UINavigationController {
             let vc = nav.viewControllers.first as! HomeViewController
+            vc.test()
             var viewModel =  HomeViewModel()
             viewModel.delegate = self
             viewModel.viewController = vc
@@ -42,21 +43,35 @@ extension HomeCoordinator: CoordinationDelegate {
         if segue.identifier == "showCityList" {
             delegate?.handleSegue(segue: segue)
         }
-        if segue.identifier == "guideToScreenA" {
-            let vc = segue.destination as! ScreenAViewController
-            var viewModel =  ScreenAViewModel()
+        if segue.identifier == "HomeToSettings" {
+            let vc = segue.destination as! SettingsViewController
+            var viewModel =  SettingsViewModel()
             viewModel.viewController = vc
-            viewModel.delegate = self as? ScreenAViewModelDelegate
+            viewModel.delegate = self as? SettingsViewModelDelegate
             vc.coordinationDelegate = self
             vc.viewModel = viewModel
         }
-        if segue.identifier == "screenAtoGuide" {
+        if segue.identifier == "SettingstoGuide" {
+            
             let vc = segue.destination as! HomeViewController
+            vc.test()
             var viewModel =  HomeViewModel()
             viewModel.viewController = vc
             viewModel.delegate = self
             vc.coordinationDelegate = self
             vc.viewModel = viewModel
+            
+//            let storyboard = UIStoryboard(name: "Home", bundle: nil)
+//            if let nav = storyboard.instantiateInitialViewController() as? UINavigationController {
+//                let vc = nav.viewControllers.first as! HomeViewController
+//                vc.test()
+//                var viewModel =  HomeViewModel()
+//                viewModel.viewController = vc
+//                viewModel.delegate = self
+//                vc.viewModel = viewModel
+//                vc.coordinationDelegate = self
+//            }
+
         }
 
     }
@@ -72,7 +87,16 @@ extension HomeCoordinator: HomeViewModelDelegate {
         delegate?.goToRandomCity()
     }
     
-    func homeViewModelNaviagateToScreenAScene(viewController: UIViewController){
-        viewController.performSegue(withIdentifier: "guideToScreenA", sender: viewController)
+    func homeViewModelNaviagateToSettingsScene(viewController: UIViewController){
+//        viewController.performSegue(withIdentifier: "guideToSettings", sender: viewController)
     }
 }
+
+extension HomeCoordinator: SettingsViewModelDelegate {
+
+
+    func homeViewModelNaviagateToGuideScene(viewController: UIViewController){
+//        viewController.performSegue(withIdentifier: "SettingstoGuide", sender: viewController)
+    }
+}
+
