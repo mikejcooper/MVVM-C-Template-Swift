@@ -73,6 +73,6 @@ extension HomeCoordinator: HomeViewModelDelegate {
     }
     
     func homeViewModelNaviagateToScreenAScene(viewController: UIViewController){
-        viewController.performSegue(withIdentifier: "guideToScreenA", sender: viewController)
+        viewController.performSegue(withIdentifier: "HomeToSettings", sender: viewController)
     }
 }
