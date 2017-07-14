@@ -25,17 +25,17 @@
                     </tableView>
                     <navigationItem key="navigationItem" title="City List" id="nkY-Qn-Ix9"/>
                     <connections>
-                        <segue destination="cpF-7M-SfM" kind="show" identifier="showCityDetailScene" id="Awp-h6-Zzn"/>
+                        <segue destination="cpF-7M-SfM" kind="show" identifier="showCityItemScene" id="Awp-h6-Zzn"/>
                     </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="8ff-3i-dNY" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="791.20000000000005" y="-14.842578710644679"/>
         </scene>
-        <!--City Detail-->
+        <!--City Item-->
         <scene sceneID="l9E-fz-g7O">
             <objects>
-                <viewController storyboardIdentifier="CityDetail" id="cpF-7M-SfM" customClass="CityDetailViewController" customModule="Siddhartha" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="CityItem" title="City Item" id="cpF-7M-SfM" customClass="CityItemViewController" customModule="Siddhartha" customModuleProvider="target" sceneMemberID="viewController">
                     <layoutGuides>
                         <viewControllerLayoutGuide type="top" id="YM2-A8-HG8"/>
                         <viewControllerLayoutGuide type="bottom" id="WcW-go-1OH"/>

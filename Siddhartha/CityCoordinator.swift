@@ -41,14 +41,14 @@ class CityCoordinator: Coordinator {
     
     func presentRandomCity() {
         let storyboard = UIStoryboard(name: "City", bundle: nil)
-        if let vc = storyboard.instantiateViewController(withIdentifier: "CityDetail") as? CityDetailViewController,
+        if let vc = storyboard.instantiateViewController(withIdentifier: "CityItem") as? CityItemViewController,
             let nav = window.rootViewController
         {
-            let viewModel =  CityDetailViewModel.init(city: Cities().randomCity())
+            let viewModel =  CityItemViewModel.init(city: Cities().randomCity())
             vc.viewModel = viewModel
             vc.coordinationDelegate = self
-            let cityDetailNav = UINavigationController.init(rootViewController: vc)
-            nav.present(cityDetailNav, animated: true, completion: nil)
+            let CityItemNav = UINavigationController.init(rootViewController: vc)
+            nav.present(CityItemNav, animated: true, completion: nil)
         }
     }
 }
@@ -68,9 +68,9 @@ extension CityCoordinator: HandleSegueDelegate {
 
 extension CityCoordinator: CoordinationDelegate {
     func prepareForSegue(segue: UIStoryboardSegue) {
-        if segue.identifier == "showCityDetailScene" {
-            let dest = segue.destination as! CityDetailViewController
-            var viewModel = CityDetailViewModel.init(city: selectedCity!)
+        if segue.identifier == "showCityItemScene" {
+            let dest = segue.destination as! CityItemViewController
+            var viewModel = CityItemViewModel.init(city: selectedCity!)
             dest.viewModel = viewModel
             viewModel.delegate = self
             dest.coordinationDelegate = self
@@ -81,10 +81,10 @@ extension CityCoordinator: CoordinationDelegate {
 extension CityCoordinator: CityListViewModelDelegate {
     func selectCity(viewController: UIViewController , city: City) {
         selectedCity = city
-        viewController.performSegue(withIdentifier: "showCityDetailScene", sender: viewController)
+        viewController.performSegue(withIdentifier: "showCityItemScene", sender: viewController)
     }
 }
 
-extension CityCoordinator: CityDetailViewModelDelegate {
+extension CityCoordinator: CityItemViewModelDelegate {
     
 }

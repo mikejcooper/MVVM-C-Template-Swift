@@ -1,5 +1,5 @@
 //
-//  CityDetailViewController.swift
+//  CityItemViewController.swift
 //  Siddhartha
 //
 //  Created by Mike Cooper on 13/07/2017.
@@ -8,11 +8,11 @@
 
 import UIKit
 
-class CityDetailViewController: UIViewController, Coordinated {
+class CityItemViewController: UIViewController, Coordinated {
     var coordinationDelegate: CoordinationDelegate?
     @IBOutlet weak var nameLabel: UILabel!
     @IBOutlet weak var dataLabel: UILabel!
-    var viewModel: CityDetailViewModel?
+    var viewModel: CityItemViewModel?
     
     override func viewDidLoad() {
         super.viewDidLoad()

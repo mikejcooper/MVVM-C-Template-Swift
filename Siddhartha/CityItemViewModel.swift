@@ -1,5 +1,5 @@
 //
-//  CityDetailViewModel.swift
+//  CityItemViewModel.swift
 //  Siddhartha
 //
 //  Created by Mike Cooper on 13/07/2017.
@@ -8,12 +8,12 @@
 
 import Foundation
 
-protocol CityDetailViewModelDelegate: class
+protocol CityItemViewModelDelegate: class
 {
 }
 
-struct CityDetailViewModel {
-    weak var delegate: CityDetailViewModelDelegate?
+struct CityItemViewModel {
+    weak var delegate: CityItemViewModelDelegate?
     var name: String!
     var data: String!
     
