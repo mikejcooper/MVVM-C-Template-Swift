@@ -18,14 +18,9 @@ class HomeViewController: UIViewController, Coordinated
     var coordinationDelegate: CoordinationDelegate?
     
     
-    var teststring = "not assigned"
-    
     override func viewDidLoad(){
     }
     
-    func test(){
-        teststring = "assigned"
-    }
     
     @IBAction func pickCityButtonClicked(_ sender: Any) {
         viewModel?.navigateToCityListScene()
@@ -33,7 +28,6 @@ class HomeViewController: UIViewController, Coordinated
     
     @IBAction func randomPickButtonClicked(_ sender: Any) {
         viewModel?.navigateToRandomCityScene()
-        print( teststring )
     }
     
     @IBAction func counterButtonClicked(_ sender: Any) {

@@ -25,9 +25,9 @@ class HomeCoordinator: Coordinator {
     func start()
     {
         let storyboard = UIStoryboard(name: "Home", bundle: nil)
+        // Finds initial view controller attached to storyboard
         if let nav = storyboard.instantiateInitialViewController() as? UINavigationController {
             let vc = nav.viewControllers.first as! HomeViewController
-            vc.test()
             var viewModel =  HomeViewModel()
             viewModel.delegate = self
             viewModel.viewController = vc
@@ -38,37 +38,28 @@ class HomeCoordinator: Coordinator {
     }
 }
 
-
+// Navigation from PARENT
 extension HomeCoordinator: HandleSegueDelegate {
     func handleSegue(segue: UIStoryboardSegue) {
-       
-        if segue.identifier == "showHomeNavScene" {
-            
-            let storyboard = UIStoryboard(name: "Home", bundle: nil)
-            if let nav = storyboard.instantiateInitialViewController() as? UINavigationController {
-                let vc = nav.viewControllers.first as! HomeViewController
-                vc.test()
-                var viewModel =  HomeViewModel()
-                viewModel.delegate = self
-                viewModel.viewController = vc
-                vc.viewModel = viewModel
-                vc.coordinationDelegate = self
-            }
-        }
+       // Handles incoming segue requests (change scene) from PARENT Coordinator
     }
 }
 
 
-
+// Navigation from CHILD
 extension HomeCoordinator: CoordinationDelegate {
+    
+    // Handles incoming segue requests (change scene) from child viewModelDelegates (below)
     func prepareForSegue(segue: UIStoryboardSegue) {
         if segue.identifier == "showCityListScene" {
+            // Parse segue requests to parent coordinator via delegate
             delegate?.handleSegue(segue: segue)
         }
         if segue.identifier == "showCounterScene" {
             delegate?.handleSegue(segue: segue)
         }
         if segue.identifier == "showSettingsScene" {
+            // Handles segue requests locally. New scene must be container within current storyboard.
             let vc = segue.destination as! SettingsViewController
             var viewModel =  SettingsViewModel()
             viewModel.viewController = vc
@@ -80,6 +71,8 @@ extension HomeCoordinator: CoordinationDelegate {
 }
 
 
+// ------------------------------- ViewModel Delegates --------------------------------------------------
+
 
 extension HomeCoordinator: HomeViewModelDelegate {
     
@@ -88,6 +81,7 @@ extension HomeCoordinator: HomeViewModelDelegate {
     }
     
     func homeViewModelNaviagateToRandomCityScene() {
+        // Call custom delegate (initalised at top)
         delegate?.naviagateToRandomCityScene()
     }
     

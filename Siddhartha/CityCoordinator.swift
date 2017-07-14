@@ -39,6 +39,7 @@ class CityCoordinator: Coordinator {
         }
     }
     
+    // Function called from parent coordinator for custom navigation flow  i.e. allows access to a view within a specific storyboard from anywhere else in the app using callbacks to AppCoordinator and then from AppCoordinator to child view. 
     func presentRandomCity() {
         let storyboard = UIStoryboard(name: "City", bundle: nil)
         if let vc = storyboard.instantiateViewController(withIdentifier: "CityItem") as? CityItemViewController,
@@ -53,6 +54,8 @@ class CityCoordinator: Coordinator {
     }
 }
 
+
+// Navigation from PARENT
 extension CityCoordinator: HandleSegueDelegate {
     func handleSegue(segue: UIStoryboardSegue) {
         if segue.identifier == "showCityListScene" {
@@ -66,6 +69,7 @@ extension CityCoordinator: HandleSegueDelegate {
     }
 }
 
+// Navigation from CHILD
 extension CityCoordinator: CoordinationDelegate {
     func prepareForSegue(segue: UIStoryboardSegue) {
         if segue.identifier == "showCityItemScene" {
@@ -77,6 +81,12 @@ extension CityCoordinator: CoordinationDelegate {
         }
     }
 }
+
+
+
+
+// ------------------------------- ViewModel Delegates --------------------------------------------------
+
 
 extension CityCoordinator: CityListViewModelDelegate {
     func selectCity(viewController: UIViewController , city: City) {

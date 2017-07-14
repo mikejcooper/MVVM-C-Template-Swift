@@ -40,39 +40,29 @@ class CounterCoordinator: Coordinator {
     
 }
 
+
+// Navigation from PARENT
 extension CounterCoordinator: HandleSegueDelegate {
     func handleSegue(segue: UIStoryboardSegue) {
         
-        
-        
-//        if segue.identifier == "showCounterScene" {
-//            let vc = segue.destination as! CounterViewController
-//            var viewModel =  CounterViewModel.init()
-//            viewModel.viewController = vc
-//            viewModel.delegate = self
-//            vc.coordinationDelegate = self
-//            vc.viewModel = viewModel
-//        }
     
     }
 }
 
+// Navigation from CHILD
 extension CounterCoordinator: CoordinationDelegate {
     func prepareForSegue(segue: UIStoryboardSegue) {
         
         if segue.identifier == "showHomeNavScene" {
             delegate?.handleSegue(segue: segue)
         }
-//        if segue.identifier == "showCounterDetailScene" {
-//            let dest = segue.destination as! CounterDetailViewController
-//            var viewModel = CounterDetailViewModel.init(Counter: selectedCounter!)
-//            dest.viewModel = viewModel
-//            viewModel.delegate = self
-//            dest.coordinationDelegate = self
-//        }
-        
+
     }
 }
+
+
+// ------------------------------- ViewModel Delegates --------------------------------------------------
+
 
 extension CounterCoordinator: CounterViewModelDelegate {
     

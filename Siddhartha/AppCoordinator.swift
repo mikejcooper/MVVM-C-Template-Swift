@@ -10,6 +10,7 @@ import UIKit
 
 class AppCoordinator: Coordinator
 {
+    // Array indexes for coordinators array
     fileprivate let kHomeCoordinator: String  = "kHomeCoordinator"
     fileprivate let kCityCoordinator: String  = "kCityCoordinator"
     fileprivate let kCounterCoordinator: String  = "kCounterCoordinator"
@@ -19,7 +20,7 @@ class AppCoordinator: Coordinator
     
     init(window: UIWindow)
     {
-        self.window = window
+        self.window = window        
         UIViewController.addCoordination()
     }
     
@@ -37,6 +38,12 @@ class AppCoordinator: Coordinator
     
 }
 
+
+//  ----------------------------------------------- Delegates --------------------------------------------------
+
+
+// --------------------- Naviagtion HandleSegue Delegates ------------------
+
 extension AppCoordinator: HandleSegueDelegate
 {
     func handleSegue(segue: UIStoryboardSegue) {
@@ -44,17 +51,16 @@ extension AppCoordinator: HandleSegueDelegate
             let cityCoordinator = CityCoordinator(window: window)
             coordinators[kCityCoordinator] = cityCoordinator
             cityCoordinator.delegate = self
-            cityCoordinator.handleSegue(segue: segue)
             
+            // There are two options here, handleSegue (like below) or .start() like in 'showCounterScene'
+            cityCoordinator.handleSegue(segue: segue)
             // start method of Coodinator sets rootViewController therefore previous navigation flow will be reset i.e. back button from pop segue will not appear. 
-//             cityCoordinator.start()
         }
         if segue.identifier == "showCounterScene" {
             let counterCoordinator = CounterCoordinator(window: window)
             coordinators[kCounterCoordinator] = counterCoordinator
             counterCoordinator.delegate = self
             counterCoordinator.start()
-//            counterCoordinator.handleSegue(segue: segue)
         }
         
         if segue.identifier == "showHomeNavScene" {
@@ -62,13 +68,13 @@ extension AppCoordinator: HandleSegueDelegate
             coordinators[kHomeCoordinator] = homeCoordinator
             homeCoordinator.delegate = self
             homeCoordinator.start()
-
-//            homeCoordinator.handleSegue(segue: segue)
         }
 
     }
 }
 
+
+// --------------------- Delegates Per Coordinator ------------------
 
 extension AppCoordinator: HomeCoordinatorDelegate
 {
@@ -93,6 +99,8 @@ extension AppCoordinator: CounterCoordinatorDelegate
 }
 
 
+
+// ------------------------------------- Coordinator Queue Segue Code -------------------------------------------
 
 extension UIViewController {
     

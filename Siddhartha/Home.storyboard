@@ -22,15 +22,6 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" misplaced="YES" text="City Guide" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="EOF-ZT-h60">
-                                <rect key="frame" x="42" y="78" width="317" height="55"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="55" id="xo0-Dl-O2g"/>
-                                </constraints>
-                                <fontDescription key="fontDescription" type="boldSystem" pointSize="30"/>
-                                <nil key="textColor"/>
-                                <nil key="highlightedColor"/>
-                            </label>
                             <button opaque="NO" contentMode="scaleToFill" misplaced="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="9VR-z1-21i">
                                 <rect key="frame" x="42" y="168" width="317" height="60"/>
                                 <constraints>
@@ -69,6 +60,15 @@
                                     <action selector="randomPickButtonClicked:" destination="BYZ-38-t0r" eventType="touchUpInside" id="TFb-0l-0is"/>
                                 </connections>
                             </button>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="City Guide" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="EOF-ZT-h60">
+                                <rect key="frame" x="29" y="82" width="317" height="55"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="55" id="xo0-Dl-O2g"/>
+                                </constraints>
+                                <fontDescription key="fontDescription" type="boldSystem" pointSize="30"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
@@ -115,7 +115,6 @@
         <!--Home Navigation-->
         <scene sceneID="arH-Si-7bi">
             <objects>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="niH-MA-4Dp" userLabel="First Responder" sceneMemberID="firstResponder"/>
                 <navigationController title="Home Navigation" automaticallyAdjustsScrollViewInsets="NO" id="RDv-KG-pv2" sceneMemberID="viewController">
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="OVP-fz-QJz">
@@ -127,6 +126,7 @@
                         <segue destination="BYZ-38-t0r" kind="relationship" relationship="rootViewController" id="UN1-sK-06I"/>
                     </connections>
                 </navigationController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="niH-MA-4Dp" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="117.59999999999999" y="123.68815592203899"/>
         </scene>
