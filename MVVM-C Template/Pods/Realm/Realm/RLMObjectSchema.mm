@@ -96,14 +96,10 @@ using namespace realm;
 
     // determine classname from objectclass as className method has not yet been updated
     NSString *className = NSStringFromClass(objectClass);
-    bool hasSwiftName = [RLMSwiftSupport isSwiftClassName:className];
-    if (hasSwiftName) {
+    bool isSwift = [RLMSwiftSupport isSwiftClassName:className];
+    if (isSwift) {
         className = [RLMSwiftSupport demangleClassName:className];
     }
-    
-    static Class s_swiftObjectClass = NSClassFromString(@"RealmSwiftObject");
-    bool isSwift = hasSwiftName || [objectClass isSubclassOfClass:s_swiftObjectClass];
-    
     schema.className = className;
     schema.objectClass = objectClass;
     schema.accessorClass = objectClass;

@@ -23,6 +23,7 @@
 #include <cstdint>
 #include <string>
 
+#include <realm/util/safe_int_ops.hpp>
 #include <realm/string_data.hpp>
 #include <realm/util/features.h>
 #include <realm/utilities.hpp>

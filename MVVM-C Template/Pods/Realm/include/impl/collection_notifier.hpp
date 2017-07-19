@@ -265,14 +265,7 @@ public:
     Handle& operator=(Handle&& other)
     {
         reset();
-        std::shared_ptr<T>::operator=(std::move(other));
-        return *this;
-    }
-
-    Handle& operator=(std::shared_ptr<T>&& other)
-    {
-        reset();
-        std::shared_ptr<T>::operator=(std::move(other));
+        std::shared_ptr<T>::shared_ptr::operator=(std::move(other));
         return *this;
     }
 

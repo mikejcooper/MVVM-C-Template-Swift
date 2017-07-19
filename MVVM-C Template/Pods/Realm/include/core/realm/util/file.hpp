@@ -22,7 +22,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <memory>
-#include <functional>
 #include <stdexcept>
 #include <string>
 #include <streambuf>
@@ -31,7 +30,6 @@
 #include <dirent.h> // POSIX.1-2001
 #endif
 
-#include <realm/utilities.hpp>
 #include <realm/util/features.h>
 #include <realm/util/assert.hpp>
 #include <realm/util/safe_int_ops.hpp>
@@ -56,25 +54,16 @@ void make_dir(const std::string& path);
 // did not already exist and was newly created, this returns true.
 bool try_make_dir(const std::string& path);
 
-/// Remove the specified empty directory path from the file system. It is an
-/// error if the specified path is not a directory, or if it is a nonempty
-/// directory. In so far as the specified path is a directory, std::remove(const
-/// char*) is equivalent to this function.
+/// Remove the specified directory path from the file system. If the
+/// specified path is a directory, this function is equivalent to
+/// std::remove(const char*).
 ///
-/// \throw File::AccessError If the directory could not be removed. If the
-/// reason corresponds to one of the exception types that are derived from
-/// File::AccessError, the derived exception type is thrown (as long as the
-/// underlying system provides the information to unambiguously distinguish that
-/// particular reason).
+/// \throw File::AccessError If the directory could not be removed. If
+/// the reason corresponds to one of the exception types that are
+/// derived from File::AccessError, the derived exception type is
+/// thrown (as long as the underlying system provides the information
+/// to unambiguously distinguish that particular reason).
 void remove_dir(const std::string& path);
-
-/// Remove the specified directory after removing all its contents. Files
-/// (nondirectory entries) will be removed as if by a call to File::remove(),
-/// and empty directories as if by a call to remove_dir().
-///
-/// \throw File::AccessError If removal of the directory, or any of its contents
-/// fail.
-void remove_dir_recursive(const std::string& path);
 
 /// Create a new unique directory for temporary files. The absolute
 /// path to the new directory is returned without a trailing slash.
@@ -186,7 +175,6 @@ public:
     /// Calling this function on an instance, that is not currently
     /// attached to an open file, has undefined behavior.
     size_t read(char* data, size_t size);
-    static size_t read_static(FileDesc fd, char* data, size_t size);
 
     /// Write the specified data to this file.
     ///
@@ -196,10 +184,6 @@ public:
     /// Calling this function on an instance, that was opened in
     /// read-only mode, has undefined behavior.
     void write(const char* data, size_t size);
-    static void write_static(FileDesc fd, const char* data, size_t size);
-
-    // Tells current file pointer of fd
-    static uint64_t get_file_pos(FileDesc fd);
 
     /// Calls write(s.data(), s.size()).
     void write(const std::string& s)
@@ -227,7 +211,6 @@ public:
     /// Calling this function on an instance that is not attached to
     /// an open file has undefined behavior.
     SizeType get_size() const;
-    static SizeType get_size_static(FileDesc fd);
 
     /// If this causes the file to grow, then the new section will
     /// have undefined contents. Setting the size with this function
@@ -284,7 +267,6 @@ public:
     /// instance. Distinct File instances have separate independent
     /// offsets, as long as the cucrrent process is not forked.
     void seek(SizeType);
-    static void seek_static(FileDesc, SizeType);
 
     /// Flush in-kernel buffers to disk. This blocks the caller until the
     /// synchronization operation is complete. On POSIX systems this function
@@ -334,9 +316,6 @@ public:
     /// \param key A 64-byte encryption key, or null to disable encryption.
     void set_encryption_key(const char* key);
 
-    /// Get the encryption key set by set_encryption_key(),
-    /// null_ptr if no key set.
-    const char* get_encryption_key();
     enum {
         /// If possible, disable opportunistic flushing of dirted
         /// pages of a memory mapped file to physical medium. On some
@@ -408,11 +387,9 @@ public:
     /// this function returns false.
     static bool is_dir(const std::string& path);
 
-    /// Remove the specified file path from the file system. It is an error if
-    /// the specified path is a directory. If the specified file is a symbolic
-    /// link, the link is removed, leaving the liked file intact. In so far as
-    /// the specified path is not a directory, std::remove(const char*) is
-    /// equivalent to this function.
+    /// Remove the specified file path from the file system. If the
+    /// specified path is not a directory, this function is equivalent
+    /// to std::remove(const char*).
     ///
     /// The specified file must not be open by the calling process. If
     /// it is, this function has undefined behaviour. Note that an
@@ -460,7 +437,6 @@ public:
     /// Both instances have to be attached to open files. If they are
     /// not, this function has undefined behavior.
     bool is_same_file(const File&) const;
-    static bool is_same_file_static(FileDesc f1, FileDesc f2);
 
     // FIXME: Get rid of this method
     bool is_removed() const;
@@ -496,22 +472,6 @@ public:
     /// string is interpreted as a relative path.
     static std::string resolve(const std::string& path, const std::string& base_dir);
 
-    using ForEachHandler = std::function<bool(const std::string& file, const std::string& dir)>;
-
-    /// Scan the specified directory recursivle, and report each file
-    /// (nondirectory entry) via the specified handler.
-    ///
-    /// The first argument passed to the handler is the name of a file (not the
-    /// whole path), and the second argument is the directory in which that file
-    /// resides. The directory will be specified as a path, and relative to \a
-    /// dir_path. The directory will be the empty string for files residing
-    /// directly in \a dir_path.
-    ///
-    /// If the handler returns false, scanning will be aborted immediately, and
-    /// for_each() will return false. Otherwise for_each() will return true.
-    ///
-    /// Scanning is done as if by a recursive set of DirScanner objects.
-    static bool for_each(const std::string& dir_path, ForEachHandler handler);
 
     struct UniqueID {
 #ifdef _WIN32 // Windows version
@@ -549,12 +509,15 @@ public:
 
 private:
 #ifdef _WIN32
-    void* m_fd;
-    bool m_have_lock; // Only valid when m_fd is not null
+    void* m_handle;
+    bool m_have_lock; // Only valid when m_handle is not null
+
+    SizeType get_file_position(); // POSIX version not needed because it's only used by Windows version of resize().
 #else
     int m_fd;
 #endif
-    std::unique_ptr<const char[]> m_encryption_key = nullptr;
+
+    std::unique_ptr<const char[]> m_encryption_key;
 
     bool lock(bool exclusive, bool non_blocking);
     void open_internal(const std::string& path, AccessMode, CreateMode, int flags, bool* success);
@@ -905,7 +868,7 @@ private:
 inline File::File(const std::string& path, Mode m)
 {
 #ifdef _WIN32
-    m_fd = nullptr;
+    m_handle = nullptr;
 #else
     m_fd = -1;
 #endif
@@ -916,7 +879,7 @@ inline File::File(const std::string& path, Mode m)
 inline File::File() noexcept
 {
 #ifdef _WIN32
-    m_fd = nullptr;
+    m_handle = nullptr;
 #else
     m_fd = -1;
 #endif
@@ -930,9 +893,9 @@ inline File::~File() noexcept
 inline File::File(File&& f) noexcept
 {
 #ifdef _WIN32
-    m_fd = f.m_fd;
+    m_handle = f.m_handle;
     m_have_lock = f.m_have_lock;
-    f.m_fd = nullptr;
+    f.m_handle = nullptr;
 #else
     m_fd = f.m_fd;
     f.m_fd = -1;
@@ -944,9 +907,9 @@ inline File& File::operator=(File&& f) noexcept
 {
     close();
 #ifdef _WIN32
-    m_fd = f.m_fd;
+    m_handle = f.m_handle;
     m_have_lock = f.m_have_lock;
-    f.m_fd = nullptr;
+    f.m_handle = nullptr;
 #else
     m_fd = f.m_fd;
     f.m_fd = -1;
@@ -1004,7 +967,7 @@ inline void File::open(const std::string& path, bool& was_created)
 inline bool File::is_attached() const noexcept
 {
 #ifdef _WIN32
-    return (m_fd != nullptr);
+    return (m_handle != nullptr);
 #else
     return 0 <= m_fd;
 #endif

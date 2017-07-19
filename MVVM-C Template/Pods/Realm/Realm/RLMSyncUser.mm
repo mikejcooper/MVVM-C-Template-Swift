@@ -20,14 +20,9 @@
 
 #import "RLMAuthResponseModel.h"
 #import "RLMNetworkClient.h"
-#import "RLMRealmConfiguration+Sync.h"
-#import "RLMRealmConfiguration_Private.hpp"
 #import "RLMSyncManager_Private.h"
-#import "RLMSyncPermissionResults_Private.hpp"
-#import "RLMSyncPermissionValue_Private.hpp"
 #import "RLMSyncSession_Private.hpp"
 #import "RLMSyncSessionRefreshHandle.hpp"
-#import "RLMSyncUtil_Private.hpp"
 #import "RLMTokenModels.h"
 #import "RLMUtil.hpp"
 
@@ -36,88 +31,21 @@
 #import "sync/sync_user.hpp"
 
 using namespace realm;
-using ConfigMaker = std::function<Realm::Config(std::shared_ptr<SyncUser>, std::string)>;
-using PermissionGetCallback = std::function<void(std::unique_ptr<PermissionResults>, std::exception_ptr)>;
-
-namespace {
-
-NSError *translateExceptionPtrToError(std::exception_ptr ptr, bool get) {
-    NSError *error = nil;
-    try {
-        std::rethrow_exception(ptr);
-    } catch (PermissionChangeException const& ex) {
-        error = (get
-                 ? make_permission_error_get(@(ex.what()), ex.code)
-                 : make_permission_error_change(@(ex.what()), ex.code));
-    }
-    catch (const std::exception &exp) {
-        RLMSetErrorOrThrow(RLMMakeError(RLMErrorFail, exp), &error);
-    }
-    return error;
-}
-
-PermissionGetCallback RLMWrapPermissionResultsCallback(RLMPermissionResultsBlock callback) {
-    return [callback](std::unique_ptr<PermissionResults> results, std::exception_ptr ptr) {
-        if (ptr) {
-            NSError *error = translateExceptionPtrToError(std::move(ptr), true);
-            REALM_ASSERT(error);
-            callback(nil, error);
-        } else {
-            // Finished successfully
-            callback([[RLMSyncPermissionResults alloc] initWithResults:std::move(results)], nil);
-        }
-    };
-}
-
-}
-
-void CocoaSyncUserContext::register_refresh_handle(const std::string& path, RLMSyncSessionRefreshHandle *handle)
-{
-    REALM_ASSERT(handle);
-    std::lock_guard<std::mutex> lock(m_mutex);
-    auto it = m_refresh_handles.find(path);
-    if (it != m_refresh_handles.end()) {
-        [it->second invalidate];
-        m_refresh_handles.erase(it);
-    }
-    m_refresh_handles.insert({path, handle});
-}
-
-void CocoaSyncUserContext::unregister_refresh_handle(const std::string& path)
-{
-    std::lock_guard<std::mutex> lock(m_mutex);
-    m_refresh_handles.erase(path);
-}
-
-void CocoaSyncUserContext::invalidate_all_handles()
-{
-    std::lock_guard<std::mutex> lock(m_mutex);
-    for (auto& it : m_refresh_handles) {
-        [it.second invalidate];
-    }
-    m_refresh_handles.clear();
-}
-
-PermissionChangeCallback RLMWrapPermissionStatusCallback(RLMPermissionStatusBlock callback) {
-    return [callback](std::exception_ptr ptr) {
-        if (ptr) {
-            NSError *error = translateExceptionPtrToError(std::move(ptr), false);
-            REALM_ASSERT(error);
-            callback(error);
-        } else {
-            // Finished successfully
-            callback(nil);
-        }
-    };
-}
 
 @interface RLMSyncUser () {
     std::shared_ptr<SyncUser> _user;
-    // FIXME: remove this when the object store ConfigMaker goes away
-    std::unique_ptr<ConfigMaker> _configMaker;
 }
 
-- (instancetype)initPrivate NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithAuthServer:(nullable NSURL *)authServer NS_DESIGNATED_INITIALIZER;
+
+@property (nonatomic, readwrite) NSURL *authenticationServer;
+
+/**
+ All 'refresh handles' associated with Realms opened by this user. A refresh handle is
+ an object that encapsulates the concept of periodically refreshing the Realm's access
+ token before it expires. Tokens are indexed by their paths (e.g. `/~/path/to/realm`).
+ */
+@property (nonatomic) NSMutableDictionary<NSString *, RLMSyncSessionRefreshHandle *> *refreshHandles;
 
 @end
 
@@ -141,22 +69,18 @@ PermissionChangeCallback RLMWrapPermissionStatusCallback(RLMPermissionStatusBloc
 
 #pragma mark - API
 
-- (instancetype)initPrivate {
+- (instancetype)initWithAuthServer:(nullable NSURL *)authServer {
     if (self = [super init]) {
-        _configMaker = std::make_unique<ConfigMaker>([](std::shared_ptr<SyncUser> user, std::string url) {
-            RLMRealmConfiguration *config = [RLMRealmConfiguration defaultConfiguration];
-            NSURL *objCUrl = [NSURL URLWithString:@(url.c_str())];
-            RLMSyncUser *objCUser = [[RLMSyncUser alloc] initWithSyncUser:std::move(user)];
-            config.syncConfiguration = [[RLMSyncConfiguration alloc] initWithUser:objCUser realmURL:objCUrl];
-            return [config config];
-        });
+        self.authenticationServer = authServer;
+        self.refreshHandles = [NSMutableDictionary dictionary];
         return self;
     }
     return nil;
 }
 
 - (instancetype)initWithSyncUser:(std::shared_ptr<SyncUser>)user {
-    if (self = [self initPrivate]) {
+    NSString *rawServerURL = @(user->server_url().c_str());
+    if (self = [self initWithAuthServer:[NSURL URLWithString:rawServerURL]]) {
         _user = user;
         return self;
     }
@@ -183,7 +107,7 @@ PermissionChangeCallback RLMWrapPermissionStatusCallback(RLMPermissionStatusBloc
                authServerURL:(NSURL *)authServerURL
                      timeout:(NSTimeInterval)timeout
                 onCompletion:(RLMUserCompletionBlock)completion {
-    RLMSyncUser *user = [[RLMSyncUser alloc] initPrivate];
+    RLMSyncUser *user = [[RLMSyncUser alloc] initWithAuthServer:authServerURL];
     [RLMSyncUser _performLogInForUser:user
                           credentials:credential
                         authServerURL:authServerURL
@@ -196,7 +120,10 @@ PermissionChangeCallback RLMWrapPermissionStatusCallback(RLMPermissionStatusBloc
         return;
     }
     _user->log_out();
-    std::static_pointer_cast<CocoaSyncUserContext>(_user->binding_context())->invalidate_all_handles();
+    for (id key in self.refreshHandles) {
+        [self.refreshHandles[key] invalidate];
+    }
+    [self.refreshHandles removeAllObjects];
 }
 
 - (nullable RLMSyncSession *)sessionForURL:(NSURL *)url {
@@ -251,83 +178,10 @@ PermissionChangeCallback RLMWrapPermissionStatusCallback(RLMPermissionStatusBloc
     return [RLMRealm realmWithConfiguration:[RLMRealmConfiguration permissionConfigurationForUser:self] error:error];
 }
 
-- (NSURL *)authenticationServer {
-    if (!_user) {
-        return nil;
-    }
-    return [NSURL URLWithString:@(_user->server_url().c_str())];
-}
-
-- (BOOL)isAdmin {
-    if (!_user) {
-        return NO;
-    }
-    return _user->is_admin();
-}
-
-#pragma mark - Passwords
-
-- (void)changePassword:(NSString *)newPassword completion:(RLMPasswordChangeStatusBlock)completion {
-    [self changePassword:newPassword forUserID:self.identity completion:completion];
-}
-
-- (void)changePassword:(NSString *)newPassword forUserID:(NSString *)userID completion:(RLMPasswordChangeStatusBlock)completion {
-    if (self.state != RLMSyncUserStateActive) {
-        completion([NSError errorWithDomain:RLMSyncErrorDomain
-                                       code:RLMSyncErrorClientSessionError
-                                   userInfo:nil]);
-        return;
-    }
-    [RLMNetworkClient sendRequestToEndpoint:RLMServerEndpointChangePassword
-                                 httpMethod:@"PUT"
-                                     server:self.authenticationServer
-                                       JSON:@{@"token": self._refreshToken,
-                                              @"user_id": userID,
-                                              @"password": newPassword}
-                                    timeout:60
-                                 completion:^(NSError *error, __unused NSDictionary *json) {
-        completion(error);
-    }];
-}
-
-#pragma mark - Permissions API
-
-- (void)retrievePermissionsWithCallback:(RLMPermissionResultsBlock)callback {
-    if (!_user || _user->state() == SyncUser::State::Error) {
-        callback(nullptr, make_permission_error_get(@"Permissions cannot be retrieved using an invalid user."));
-        return;
-    }
-    Permissions::get_permissions(_user, RLMWrapPermissionResultsCallback(callback), *_configMaker);
-}
-
-- (void)applyPermission:(RLMSyncPermissionValue *)permission callback:(RLMPermissionStatusBlock)callback {
-    if (!_user || _user->state() == SyncUser::State::Error) {
-        callback(make_permission_error_change(@"Permissions cannot be applied using an invalid user."));
-        return;
-    }
-    Permissions::set_permission(_user,
-                                [permission rawPermission],
-                                RLMWrapPermissionStatusCallback(callback),
-                                *_configMaker);
-}
-
-- (void)revokePermission:(RLMSyncPermissionValue *)permission callback:(RLMPermissionStatusBlock)callback {
-    if (!_user || _user->state() == SyncUser::State::Error) {
-        callback(make_permission_error_change(@"Permissions cannot be revoked using an invalid user."));
-        return;
-    }
-    Permissions::delete_permission(_user,
-                                   [permission rawPermission],
-                                   RLMWrapPermissionStatusCallback(callback),
-                                   *_configMaker);
-}
-
 #pragma mark - Private API
 
-+ (void)_setUpBindingContextFactory {
-    SyncUser::set_binding_context_factory([] {
-        return std::make_shared<CocoaSyncUserContext>();
-    });
+- (void)_unregisterRefreshHandleForURLPath:(NSString *)path {
+    [self.refreshHandles removeObjectForKey:path];
 }
 
 - (NSString *)_refreshToken {
@@ -335,6 +189,20 @@ PermissionChangeCallback RLMWrapPermissionStatusCallback(RLMPermissionStatusBloc
         return nil;
     }
     return @(_user->refresh_token().c_str());
+}
+
+- (void)_bindSessionWithConfig:(const SyncConfig&)config
+                       session:(std::shared_ptr<SyncSession>)session
+                    completion:(RLMSyncBasicErrorReportingBlock)completion {
+    // Create a refresh handle, and have it handle all the work.
+    NSURL *realmURL = [NSURL URLWithString:@(config.realm_url.c_str())];
+    NSString *path = [realmURL path];
+    REALM_ASSERT(realmURL && path);
+    [self.refreshHandles[path] invalidate];
+    self.refreshHandles[path] = [[RLMSyncSessionRefreshHandle alloc] initWithRealmURL:realmURL
+                                                                                 user:self
+                                                                              session:std::move(session)
+                                                                      completionBlock:completion];
 }
 
 - (std::shared_ptr<SyncUser>)_syncUser {
@@ -372,7 +240,10 @@ PermissionChangeCallback RLMWrapPermissionStatusCallback(RLMPermissionStatusBloc
                                                                        requireRefreshToken:YES];
             if (!model) {
                 // Malformed JSON
-                completion(nil, make_auth_error_bad_response(json));
+                error = [NSError errorWithDomain:RLMSyncErrorDomain
+                                            code:RLMSyncErrorBadResponse
+                                        userInfo:@{kRLMSyncErrorJSONKey: json}];
+                completion(nil, error);
                 return;
             } else {
                 std::string server_url = authServerURL.absoluteString.UTF8String;
@@ -380,10 +251,11 @@ PermissionChangeCallback RLMWrapPermissionStatusCallback(RLMPermissionStatusBloc
                                                                 [model.refreshToken.token UTF8String],
                                                                 std::move(server_url));
                 if (!sync_user) {
-                    completion(nil, make_auth_error_client_issue());
+                    completion(nil, [NSError errorWithDomain:RLMSyncErrorDomain
+                                                        code:RLMSyncErrorClientSessionError
+                                                    userInfo:nil]);
                     return;
                 }
-                sync_user->set_is_admin(model.refreshToken.tokenData.isAdmin);
                 user->_user = sync_user;
                 completion(user, nil);
             }
@@ -404,12 +276,11 @@ PermissionChangeCallback RLMWrapPermissionStatusCallback(RLMPermissionStatusBloc
                                      completionBlock:(nonnull RLMUserCompletionBlock)completion {
     NSString *identity = credentials.userInfo[kRLMSyncIdentityKey];
     NSAssert(identity != nil, @"Improperly created direct access token credential.");
-    auto sync_user = SyncManager::shared().get_user([identity UTF8String],
-                                                    [credentials.token UTF8String],
-                                                    none,
-                                                    SyncUser::TokenType::Admin);
+    auto sync_user = SyncManager::shared().get_user([identity UTF8String], [credentials.token UTF8String], none, true);
     if (!sync_user) {
-        completion(nil, make_auth_error_client_issue());
+        completion(nil, [NSError errorWithDomain:RLMSyncErrorDomain
+                                            code:RLMSyncErrorClientSessionError
+                                        userInfo:nil]);
         return;
     }
     user->_user = sync_user;

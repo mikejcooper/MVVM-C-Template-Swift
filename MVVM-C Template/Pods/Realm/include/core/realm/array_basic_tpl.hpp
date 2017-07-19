@@ -65,11 +65,10 @@ inline MemRef BasicArray<T>::create_array(Array::Type type, bool context_flag, s
     if (init_size) {
         BasicArray<T> tmp(allocator);
         tmp.init_from_mem(mem);
-        T* p = reinterpret_cast<T*>(tmp.m_data);
-        T* end = p + init_size;
-        while (p < end) {
-            *p++ = value;
+        for (size_t i = 0; i < init_size; ++i) {
+            tmp.set(i, value);
         }
+        return tmp.get_mem();
     }
     return mem;
 }

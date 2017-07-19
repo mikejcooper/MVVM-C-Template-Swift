@@ -58,61 +58,13 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "MVVM-C Template/CounterViewModel.swift"
-            timestampString = "522089365.500755"
+            timestampString = "522147675.724304"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "38"
-            endingLineNumber = "38"
+            startingLineNumber = "40"
+            endingLineNumber = "40"
             landmarkName = "CounterViewModel"
             landmarkType = "3">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "MVVM-C Template/CounterViewModel.swift"
-            timestampString = "522089800.333047"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "54"
-            endingLineNumber = "54"
-            landmarkName = "start()"
-            landmarkType = "7">
-            <Locations>
-               <Location
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "MVVM_C_Template.CounterViewModel.start () -&gt; ()"
-                  moduleName = "MVVM-C Template"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/mikecooper/Google%20Drive/Macbook%20Pro/Work/Projects/Tab%20Books/Applications/MVVM-C%20Template/MVVM-C%20Template/MVVM-C%20Template/CounterViewModel.swift"
-                  timestampString = "522089801.303927"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "54"
-                  endingLineNumber = "54"
-                  offsetFromSymbolStart = "277">
-               </Location>
-               <Location
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "MVVM_C_Template.CounterViewModel.(start () -&gt; ()).(closure #1)"
-                  moduleName = "MVVM-C Template"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/mikecooper/Google%20Drive/Macbook%20Pro/Work/Projects/Tab%20Books/Applications/MVVM-C%20Template/MVVM-C%20Template/MVVM-C%20Template/CounterViewModel.swift"
-                  timestampString = "522089801.306428"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "55"
-                  endingLineNumber = "55"
-                  offsetFromSymbolStart = "54">
-               </Location>
-            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>

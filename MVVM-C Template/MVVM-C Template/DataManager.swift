@@ -11,15 +11,15 @@ import RealmSwift
 
 class DataManager{
     
-    let realm : Realm
-    init(){ realm = try! Realm() }
+//    let realm : Realm
+//    init(){ realm = try! Realm() }
     
     
-    var counterModel : CounterModel?
+//    var counterModel : CounterModel?
 
     func start() {
         //removeCounterModel(_id: "userSettings")
-        counterModel = CounterModelUntility().fetchCounterModel(_id: "userSettings", realm: realm)
+//        counterModel = CounterModelUntility().fetchCounterModel(_id: "userSettings", realm: realm)
         
 
 //        try! self.realm.write {

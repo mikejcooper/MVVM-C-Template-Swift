@@ -1,15 +1,17 @@
 # Uncomment the next line to define a global platform for your project
-platform :ios, '9.0'
+platform :ios, '8.0'
 
 target 'MVVM-C Template' do
   # Comment the next line if you're not using Swift and don't want to use dynamic frameworks
   use_frameworks!
 
   # Pods for MVVM-C Template
-  pod 'RxSwift',    '~> 3.0'
+  pod 'RxSwift',    '~> 3.2'
   pod 'RxCocoa',    '~> 3.0'
-  pod 'Realm',      '3.0.0-beta'
-  pod 'RealmSwift', '3.0.0-beta'
+  pod 'RxRealm',    '~> 0.6'
+  pod 'Realm',      '2.5'
+  pod 'RealmSwift', '2.5'
+
 
   target 'MVVM-C TemplateTests' do
     inherit! :search_paths

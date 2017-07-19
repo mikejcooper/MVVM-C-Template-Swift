@@ -22,7 +22,6 @@
 #import "RLMNetworkClient.h"
 #import "RLMSyncManager_Private.h"
 #import "RLMSyncUser_Private.hpp"
-#import "RLMSyncUtil_Private.hpp"
 #import "RLMTokenModels.h"
 #import "RLMUtil.hpp"
 
@@ -30,27 +29,16 @@
 
 using namespace realm;
 
-namespace {
-
-void unregisterRefreshHandle(const std::weak_ptr<SyncUser>& user, const std::string& path) {
-    if (auto strong_user = user.lock()) {
-        std::static_pointer_cast<CocoaSyncUserContext>(strong_user->binding_context())->unregister_refresh_handle(path);
-    }
-}
-
-}
-
 @interface RLMSyncSessionRefreshHandle () {
-    std::weak_ptr<SyncUser> _user;
-    std::string _path;
     std::weak_ptr<SyncSession> _session;
     std::shared_ptr<SyncSession> _strongSession;
 }
 
+@property (nonatomic, weak) RLMSyncUser *user;
+@property (nonatomic, strong) NSString *pathToRealm;
 @property (nonatomic) NSTimer *timer;
 
 @property (nonatomic) NSURL *realmURL;
-@property (nonatomic) NSURL *authServerURL;
 @property (nonatomic, copy) RLMSyncBasicErrorReportingBlock completionBlock;
 
 @end
@@ -58,22 +46,18 @@ void unregisterRefreshHandle(const std::weak_ptr<SyncUser>& user, const std::str
 @implementation RLMSyncSessionRefreshHandle
 
 - (instancetype)initWithRealmURL:(NSURL *)realmURL
-                            user:(std::shared_ptr<realm::SyncUser>)user
+                            user:(RLMSyncUser *)user
                          session:(std::shared_ptr<realm::SyncSession>)session
                  completionBlock:(RLMSyncBasicErrorReportingBlock)completionBlock {
     if (self = [super init]) {
         NSString *path = [realmURL path];
-        _path = [path UTF8String];
-        self.authServerURL = [NSURL URLWithString:@(user->server_url().c_str())];
-        if (!self.authServerURL) {
-            @throw RLMException(@"User object isn't configured with an auth server URL.");
-        }
+        self.pathToRealm = path;
+        self.user = user;
         self.completionBlock = completionBlock;
         self.realmURL = realmURL;
         // For the initial bind, we want to prolong the session's lifetime.
         _strongSession = std::move(session);
         _session = _strongSession;
-        _user = user;
         // Immediately fire off the network request.
         [self _timerFired:nil];
         return self;
@@ -108,7 +92,7 @@ void unregisterRefreshHandle(const std::weak_ptr<SyncUser>& user, const std::str
         NSDate *fireDate = [RLMSyncSessionRefreshHandle fireDateForTokenExpirationDate:dateWhenTokenExpires
                                                                                nowDate:[NSDate date]];
         if (!fireDate) {
-            unregisterRefreshHandle(_user, _path);
+            [self.user _unregisterRefreshHandleForURLPath:self.pathToRealm];
             return;
         }
         self.timer = [[NSTimer alloc] initWithFireDate:fireDate
@@ -122,12 +106,12 @@ void unregisterRefreshHandle(const std::weak_ptr<SyncUser>& user, const std::str
 }
 
 /// Handler for network requests whose responses successfully parse into an auth response model.
-- (BOOL)_handleSuccessfulRequest:(RLMAuthResponseModel *)model {
+- (BOOL)_handleSuccessfulRequest:(RLMAuthResponseModel *)model strongUser:(RLMSyncUser *)user {
     // Success
     std::shared_ptr<SyncSession> session = _session.lock();
     if (!session) {
         // The session is dead or in a fatal error state.
-        unregisterRefreshHandle(_user, _path);
+        [user _unregisterRefreshHandleForURLPath:self.pathToRealm];
         [self invalidate];
         return NO;
     }
@@ -155,33 +139,38 @@ void unregisterRefreshHandle(const std::weak_ptr<SyncUser>& user, const std::str
             [self scheduleRefreshTimer:expires];
         } else {
             // The session is dead or in a fatal error state.
-            unregisterRefreshHandle(_user, _path);
+            [user _unregisterRefreshHandleForURLPath:self.pathToRealm];
             [self invalidate];
         }
     }
     if (self.completionBlock) {
-        self.completionBlock(success ? nil : make_auth_error_client_issue());
+        self.completionBlock(success ? nil : [NSError errorWithDomain:RLMSyncErrorDomain
+                                                                 code:RLMSyncErrorClientSessionError
+                                                             userInfo:nil]);
     }
     return success;
 }
 
 /// Handler for network requests that failed before the JSON parsing stage.
-- (BOOL)_handleFailedRequest:(NSError *)error {
-    NSError *authError;
-    if ([error.domain isEqualToString:RLMSyncAuthErrorDomain]) {
+- (BOOL)_handleFailedRequest:(NSError *)error strongUser:(RLMSyncUser *)user {
+    NSError *syncError;
+    if ([error.domain isEqualToString:RLMSyncErrorDomain]) {
         // Network client may return sync related error
-        authError = error;
+        syncError = error;
     } else {
         // Something else went wrong
-        authError = make_auth_error_bad_response();
+        syncError = [NSError errorWithDomain:RLMSyncErrorDomain
+                                        code:RLMSyncErrorBadResponse
+                                    userInfo:@{kRLMSyncUnderlyingErrorKey: error}];
     }
+
     if (self.completionBlock) {
-        self.completionBlock(authError);
+        self.completionBlock(syncError);
     }
-    [[RLMSyncManager sharedManager] _fireError:make_sync_error(authError)];
+    [[RLMSyncManager sharedManager] _fireError:syncError];
     // Certain errors related to network connectivity should trigger a retry.
     NSDate *nextTryDate = nil;
-    if ([error.domain isEqualToString:NSURLErrorDomain]) {
+    if (error.domain == NSURLErrorDomain) {
         switch (error.code) {
             case NSURLErrorCannotConnectToHost:
             case NSURLErrorNotConnectedToInternet:
@@ -198,7 +187,7 @@ void unregisterRefreshHandle(const std::weak_ptr<SyncUser>& user, const std::str
     }
     if (!nextTryDate) {
         // This error isn't a network failure error. Just invalidate the refresh handle and stop.
-        unregisterRefreshHandle(_user, _path);
+        [user _unregisterRefreshHandleForURLPath:self.pathToRealm];
         [self invalidate];
         return NO;
     }
@@ -212,41 +201,49 @@ void unregisterRefreshHandle(const std::weak_ptr<SyncUser>& user, const std::str
 
 /// Callback handler for network requests.
 - (BOOL)_onRefreshCompletionWithError:(NSError *)error json:(NSDictionary *)json {
+    RLMSyncUser *user = self.user;
+    if (!user) {
+        return NO;
+    }
     if (json && !error) {
         RLMAuthResponseModel *model = [[RLMAuthResponseModel alloc] initWithDictionary:json
                                                                     requireAccessToken:YES
                                                                    requireRefreshToken:NO];
         if (model) {
-            return [self _handleSuccessfulRequest:model];
+            return [self _handleSuccessfulRequest:model strongUser:user];
         }
         // Otherwise, malformed JSON
-        unregisterRefreshHandle(_user, _path);
+        error = [NSError errorWithDomain:RLMSyncErrorDomain
+                                    code:RLMSyncErrorBadResponse
+                                userInfo:@{kRLMSyncErrorJSONKey: json}];
+        [user _unregisterRefreshHandleForURLPath:self.pathToRealm];
         [self.timer invalidate];
         if (self.completionBlock) {
             self.completionBlock(error);
         }
-        [[RLMSyncManager sharedManager] _fireError:make_sync_error(make_auth_error_bad_response(json))];
+        [[RLMSyncManager sharedManager] _fireError:error];
         return NO;
     } else {
         REALM_ASSERT(error);
-        return [self _handleFailedRequest:error];
+        return [self _handleFailedRequest:error strongUser:user];
     }
 }
 
 - (void)_timerFired:(__unused NSTimer *)timer {
-    RLMServerToken refreshToken = nil;
-    if (auto user = _user.lock()) {
-        refreshToken = @(user->refresh_token().c_str());
+    RLMSyncUser *user = self.user;
+    if (!user) {
+        return;
     }
+    RLMServerToken refreshToken = user._refreshToken;
     if (!refreshToken) {
-        unregisterRefreshHandle(_user, _path);
+        [user _unregisterRefreshHandleForURLPath:self.pathToRealm];
         [self.timer invalidate];
         return;
     }
 
     NSDictionary *json = @{
                            kRLMSyncProviderKey: @"realm",
-                           kRLMSyncPathKey: @(_path.c_str()),
+                           kRLMSyncPathKey: self.pathToRealm,
                            kRLMSyncDataKey: refreshToken,
                            kRLMSyncAppIDKey: [RLMSyncManager sharedManager].appID,
                            };
@@ -256,7 +253,7 @@ void unregisterRefreshHandle(const std::weak_ptr<SyncUser>& user, const std::str
         [weakSelf _onRefreshCompletionWithError:error json:json];
     };
     [RLMNetworkClient postRequestToEndpoint:RLMServerEndpointAuth
-                                     server:self.authServerURL
+                                     server:user.authenticationServer
                                        JSON:json
                                  completion:handler];
 }

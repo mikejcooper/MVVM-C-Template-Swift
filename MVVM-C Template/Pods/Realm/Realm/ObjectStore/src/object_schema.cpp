@@ -18,7 +18,6 @@
 
 #include "object_schema.hpp"
 
-#include "feature_checks.hpp"
 #include "object_store.hpp"
 #include "property.hpp"
 #include "schema.hpp"
@@ -28,10 +27,6 @@
 #include <realm/data_type.hpp>
 #include <realm/group.hpp>
 #include <realm/table.hpp>
-
-#if REALM_HAVE_SYNC_STABLE_IDS
-#include <realm/sync/object.hpp>
-#endif
 
 using namespace realm;
 
@@ -66,7 +61,6 @@ ObjectSchema::ObjectSchema(std::string name, std::initializer_list<Property> per
     for (auto const& prop : persisted_properties) {
         if (prop.is_primary) {
             primary_key = prop.name;
-            break;
         }
     }
 }
@@ -83,20 +77,8 @@ ObjectSchema::ObjectSchema(Group const& group, StringData name, size_t index) : 
     size_t count = table->get_column_count();
     persisted_properties.reserve(count);
     for (size_t col = 0; col < count; col++) {
-        if (table->get_column_type(col) == type_Table)
-            continue;
-
-        StringData column_name = table->get_column_name(col);
-
-#if REALM_HAVE_SYNC_STABLE_IDS
-        // The object ID column is an implementation detail, and is omitted from the schema.
-        // FIXME: Consider filtering out all column names starting with `__`.
-        if (column_name == sync::object_id_column_name)
-            continue;
-#endif
-
         Property property;
-        property.name = column_name;
+        property.name = table->get_column_name(col).data();
         property.type = (PropertyType)table->get_column_type(col);
         property.is_indexed = table->has_search_index(col);
         property.is_nullable = table->is_nullable(col) || property.type == PropertyType::Object;

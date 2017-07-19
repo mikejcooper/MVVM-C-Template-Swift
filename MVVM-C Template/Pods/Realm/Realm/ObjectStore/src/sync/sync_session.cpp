@@ -109,9 +109,6 @@ struct SyncSession::State {
     // Returns true iff the session should ask the binding to get a token for `bind()`.
     virtual bool revive_if_needed(std::unique_lock<std::mutex>&, SyncSession&) const { return false; }
 
-    // Perform any work needed to respond to the application regaining network connectivity.
-    virtual void handle_reconnect(std::unique_lock<std::mutex>&, SyncSession&) const { };
-
     // The user that owns this session has been logged out, and the session should take appropriate action.
     virtual void log_out(std::unique_lock<std::mutex>&, SyncSession&) const { }
 
@@ -155,14 +152,8 @@ struct sync_session_states::WaitingForAccessToken : public SyncSession::State {
         }
         if (session.m_session_has_been_bound) {
             session.m_session->refresh(std::move(access_token));
-            session.m_session->cancel_reconnect_delay();
         } else {
-#if REALM_SSL_SETTING_IN_SESSION_CONFIG
             session.m_session->bind(*session.m_server_url, std::move(access_token));
-#else
-            session.m_session->bind(*session.m_server_url, std::move(access_token),
-                                    session.m_config.client_validate_ssl, session.m_config.ssl_trust_certificate_path);
-#endif
             session.m_session_has_been_bound = true;
         }
 
@@ -193,14 +184,6 @@ struct sync_session_states::WaitingForAccessToken : public SyncSession::State {
     {
         session.m_deferred_close = false;
         return false;
-    }
-
-    void handle_reconnect(std::unique_lock<std::mutex>& lock, SyncSession& session) const override
-    {
-        // Ask the binding to retry getting the token for this session.
-        std::shared_ptr<SyncSession> session_ptr = session.shared_from_this();
-        lock.unlock();
-        session.m_config.bind_session_handler(session_ptr->m_realm_path, session_ptr->m_config, session_ptr);
     }
 
     void nonsync_transact_notify(std::unique_lock<std::mutex>&,
@@ -241,10 +224,6 @@ struct sync_session_states::Active : public SyncSession::State {
                               const util::Optional<std::string>&) const override
     {
         session.m_session->refresh(std::move(access_token));
-        // Cancel the session's reconnection delay. This is important if the
-        // token is being refreshed as a response to a 202 (token expired)
-        // error, or similar non-fatal sync errors.
-        session.m_session->cancel_reconnect_delay();
     }
 
     bool access_token_expired(std::unique_lock<std::mutex>& lock, SyncSession& session) const override
@@ -316,9 +295,6 @@ struct sync_session_states::Dying : public SyncSession::State {
         }
         // If the error isn't fatal, don't change state, but don't
         // allow it to be reported either.
-        // FIXME: What if the token expires while a session is dying?
-        // Should we allow the token to be refreshed so that changes
-        // can finish being uploaded?
         return true;
     }
 
@@ -353,6 +329,7 @@ struct sync_session_states::Inactive : public SyncSession::State {
         }
         session.m_completion_wait_packages.clear();
         session.m_session = nullptr;
+        session.m_server_url = util::none;
         session.unregister(lock);
     }
 
@@ -416,36 +393,10 @@ std::string SyncSession::get_recovery_file_path()
                                           util::create_timestamped_template("recovered_realm"));
 }
 
-void SyncSession::update_error_and_mark_file_for_deletion(SyncError& error, ShouldBackup should_backup)
-{
-    // Add a SyncFileActionMetadata marking the Realm as needing to be deleted.
-    std::string recovery_path;
-    auto original_path = path();
-    error.user_info[SyncError::c_original_file_path_key] = original_path;
-    if (should_backup == ShouldBackup::yes) {
-        recovery_path = get_recovery_file_path();
-        error.user_info[SyncError::c_recovery_file_path_key] = recovery_path;
-    }
-    using Action = SyncFileActionMetadata::Action;
-    auto action = should_backup == ShouldBackup::yes ? Action::BackUpThenDeleteRealm : Action::DeleteRealm;
-    SyncManager::shared().perform_metadata_update([this,
-                                                   action,
-                                                   original_path=std::move(original_path),
-                                                   recovery_path=std::move(recovery_path)](const auto& manager) {
-        SyncFileActionMetadata(manager,
-                               action,
-                               original_path,
-                               m_config.realm_url,
-                               m_config.user->identity(),
-                               util::Optional<std::string>(std::move(recovery_path)));
-    });
-}
-
 // This method should only be called from within the error handler callback registered upon the underlying `m_session`.
 void SyncSession::handle_error(SyncError error)
 {
-    enum class NextStateAfterError { none, inactive, error };
-    auto next_state = error.is_fatal ? NextStateAfterError::error : NextStateAfterError::none;
+    bool should_invalidate_session = error.is_fatal;
     auto error_code = error.error_code;
 
     {
@@ -462,7 +413,6 @@ void SyncSession::handle_error(SyncError error)
             // Connection level errors
             case ProtocolError::connection_closed:
             case ProtocolError::other_error:
-            case ProtocolError::pong_timeout:
                 // Not real errors, don't need to be reported to the binding.
                 return;
             case ProtocolError::unknown_message:
@@ -473,7 +423,7 @@ void SyncSession::handle_error(SyncError error)
             case ProtocolError::reuse_of_session_ident:
             case ProtocolError::bound_in_other_session:
             case ProtocolError::bad_message_order:
-            case ProtocolError::malformed_http_request:
+            case ProtocolError::pong_timeout:
                 break;
             // Session errors
             case ProtocolError::session_closed:
@@ -491,7 +441,7 @@ void SyncSession::handle_error(SyncError error)
             }
             case ProtocolError::bad_authentication: {
                 std::shared_ptr<SyncUser> user_to_invalidate;
-                next_state = NextStateAfterError::none;
+                should_invalidate_session = false;
                 {
                     std::unique_lock<std::mutex> lock(m_state_mutex);
                     user_to_invalidate = user();
@@ -503,20 +453,30 @@ void SyncSession::handle_error(SyncError error)
             }
             case ProtocolError::illegal_realm_path:
             case ProtocolError::no_such_realm:
-                break;
-            case ProtocolError::permission_denied: {
-                next_state = NextStateAfterError::inactive;
-                update_error_and_mark_file_for_deletion(error, ShouldBackup::no);
-                break;
-            }
+            case ProtocolError::permission_denied:
             case ProtocolError::bad_client_version:
                 break;
             case ProtocolError::bad_server_file_ident:
             case ProtocolError::bad_client_file_ident:
             case ProtocolError::bad_server_version:
-            case ProtocolError::diverging_histories:
-                update_error_and_mark_file_for_deletion(error, ShouldBackup::yes);
+            case ProtocolError::diverging_histories: {
+                // Add a SyncFileActionMetadata marking the Realm as needing to be deleted.
+                auto recovery_path = get_recovery_file_path();
+                auto original_path = path();
+                error.user_info[SyncError::c_original_file_path_key] = original_path;
+                error.user_info[SyncError::c_recovery_file_path_key] = recovery_path;
+                SyncManager::shared().perform_metadata_update([this,
+                                                               original_path=std::move(original_path),
+                                                               recovery_path=std::move(recovery_path)](const auto& manager) {
+                    SyncFileActionMetadata(manager,
+                                           SyncFileActionMetadata::Action::HandleRealmForClientReset,
+                                           original_path,
+                                           m_config.realm_url,
+                                           m_config.user->identity(),
+                                           util::Optional<std::string>(std::move(recovery_path)));
+                });
                 break;
+            }
             case ProtocolError::bad_changeset:
                 break;
         }
@@ -551,19 +511,9 @@ void SyncSession::handle_error(SyncError error)
         // Unrecognized error code; just ignore it.
         return;
     }
-    switch (next_state) {
-        case NextStateAfterError::none:
-            break;
-        case NextStateAfterError::inactive: {
-            std::unique_lock<std::mutex> lock(m_state_mutex);
-            advance_state(lock, State::inactive);
-            break;
-        }
-        case NextStateAfterError::error: {
-            std::unique_lock<std::mutex> lock(m_state_mutex);
-            advance_state(lock, State::error);
-            break;
-        }
+    if (should_invalidate_session) {
+        std::unique_lock<std::mutex> lock(m_state_mutex);
+        advance_state(lock, State::error);
     }
     if (m_error_handler) {
         m_error_handler(shared_from_this(), std::move(error));
@@ -638,10 +588,6 @@ void SyncSession::create_sync_session()
     sync::Session::Config session_config;
     session_config.changeset_cooker = m_config.transformer;
     session_config.encryption_key = m_config.realm_encryption_key;
-#if REALM_SSL_SETTING_IN_SESSION_CONFIG
-    session_config.verify_servers_ssl_certificate = m_config.client_validate_ssl;
-    session_config.ssl_trust_certificate_path = m_config.ssl_trust_certificate_path;
-#endif
     m_session = std::make_unique<sync::Session>(m_client.client, m_realm_path, session_config);
 
     // The next time we get a token, call `bind()` instead of `refresh()`.
@@ -673,7 +619,7 @@ void SyncSession::create_sync_session()
     // Set up the wrapped progress handler callback
     auto wrapped_progress_handler = [this, weak_self](uint_fast64_t downloaded, uint_fast64_t downloadable,
                                                       uint_fast64_t uploaded, uint_fast64_t uploadable,
-                                                      bool is_fresh, uint_fast64_t /*snapshot_version*/) {
+                                                      bool is_fresh) {
         if (auto self = weak_self.lock()) {
             handle_progress_update(downloaded, downloadable, uploaded, uploadable, is_fresh);
         }
@@ -715,12 +661,6 @@ void SyncSession::revive_if_needed()
     }
     if (handler)
         handler.value()(m_realm_path, m_config, shared_from_this());
-}
-
-void SyncSession::handle_reconnect()
-{
-    std::unique_lock<std::mutex> lock(m_state_mutex);
-    m_state->handle_reconnect(lock, *this);
 }
 
 void SyncSession::log_out()

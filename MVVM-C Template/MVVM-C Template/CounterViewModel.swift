@@ -7,10 +7,13 @@
 //
 
 import Foundation
-import UIKit
-import RxSwift
-import RxCocoa
-import RealmSwift
+
+import RxSwift // Binding ViewModel to ViewController : Variable<Type>
+import RxCocoa // Allows use of .map functionality
+
+import RealmSwift // Allows access to presistent data stored in realm database
+// Binding examples: // https://github.com/RxSwiftCommunity/RxRealm
+import RxRealm // Binding Model to ViewModel : allows for Observerablility on realm data types
 
 
 
@@ -31,40 +34,22 @@ class CounterViewModel : NSObject
     
     var model: CounterModel
     
-    var count = Variable<String>("0")
-    var persistentLabel = Variable<String>("0")
+    var count = Variable<String>("-1")
    
-    private var notificationToken: NotificationToken?
-
     
-     var updateME = Variable<String>("0")
-
-    
-    init(requiredModel: CounterModel)
+    override init()
     {
-        self.model = requiredModel
         realm = try! Realm()
+
+        model = CounterModelUntility().fetchCounterModel(_id: "userSettings", realm: realm)
         
-        count.value = String(model.count)
-        persistentLabel.value = model.persitentData
         
+        _ = Observable.from(object: model)
+            .map { model -> String in
+                return String(model.count)
+            }
+            .bindTo(count)
     }
-    
-    func start(){
-//        let predicate = NSPredicate(format: "id = %@", "userSettings")
-//        let model1 = self.realm.objects(CounterModel.self).filter(predicate).first!
-//        notificationToken = model1.addNotificationBlock { change in
-//            switch change {
-//            case .initial(let updated_model):
-//                self.updateME.value = String(updated_model.count)
-//            case .update(let updated_model, _, _, _):
-//                self.updateME.value = String(updated_model.count)
-//            case .error(let error):
-//                print(error)
-//            }
-//        }
-    }
-    
     
     
     func navigateToHomeNavScene(){
@@ -72,27 +57,15 @@ class CounterViewModel : NSObject
     }
     
     func incrimentCounter(){
-        print(updateME.value)
         
         // update model
         try! realm.write {
             model.count += 1
         }
         
-        //update view model 
-        count.value = String(model.count)
-        
-        print(count.value)
-
     }
     
     func decrimentCounter(){
-        try! realm.write {
-            model.count -= 1
-        }
-        
-        count.value = String(model.count)
-        print(count)
         
         
 

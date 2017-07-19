@@ -49,7 +49,7 @@ public class LinkingObjectsBase: NSObject, NSFastEnumeration {
 
     // MARK: Fast Enumeration
     public func countByEnumerating(with state: UnsafeMutablePointer<NSFastEnumerationState>,
-                                   objects buffer: AutoreleasingUnsafeMutablePointer<AnyObject?>,
+                                   objects buffer: AutoreleasingUnsafeMutablePointer<AnyObject?>!,
                                    count len: Int) -> Int {
         return Int(rlmResults.countByEnumerating(with: state,
                                                  objects: buffer,
@@ -106,7 +106,8 @@ public final class LinkingObjects<T: Object>: LinkingObjectsBase {
 
     /// A human-readable description of the objects represented by the linking objects.
     public override var description: String {
-        return RLMDescriptionWithMaxDepth("LinkingObjects<\(rlmResults.objectClassName)>", rlmResults, RLMDescriptionMaxDepth)
+        let type = "LinkingObjects<\(rlmResults.objectClassName)>"
+        return gsub(pattern: "RLMResults <0x[a-z0-9]+>", template: type, string: rlmResults.description) ?? type
     }
 
     // MARK: Index Retrieval

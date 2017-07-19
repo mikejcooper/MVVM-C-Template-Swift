@@ -28,7 +28,6 @@ typedef NS_ENUM(NSUInteger, RLMServerEndpoint) {
     RLMServerEndpointLogout,
     RLMServerEndpointAddCredentials,
     RLMServerEndpointRemoveCredentials,
-    RLMServerEndpointChangePassword,
 };
 
 /**
@@ -43,19 +42,11 @@ NS_ASSUME_NONNULL_BEGIN
                          JSON:(NSDictionary *)jsonDictionary
                    completion:(RLMSyncCompletionBlock)completionBlock;
 
-+ (void)postRequestToEndpoint:(RLMServerEndpoint)endpoint
-                       server:(NSURL *)serverURL
-                         JSON:(NSDictionary *)jsonDictionary
-                      timeout:(NSTimeInterval)timeout
-                   completion:(RLMSyncCompletionBlock)completionBlock;
-
 /**
- Send some JSON data using the specified HTTP method (e.g. 'POST', 'PUT', etc.) to the authentication server,
- and asynchronously call a completion block with a JSON response and/or error.
+ Post some JSON data to the authentication server, and asynchronously call a completion block with a JSON response
+ and/or error.
  */
-
-+ (void)sendRequestToEndpoint:(RLMServerEndpoint)endpoint
-                   httpMethod:(NSString *)httpMethod
++ (void)postRequestToEndpoint:(RLMServerEndpoint)endpoint
                        server:(NSURL *)serverURL
                          JSON:(NSDictionary *)jsonDictionary
                       timeout:(NSTimeInterval)timeout

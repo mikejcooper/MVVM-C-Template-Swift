@@ -16,9 +16,7 @@ class CounterCoordinator: Coordinator {
     
     var window: UIWindow
     weak var delegate: CounterCoordinatorDelegate?
-    
-    weak var counterModel: CounterModel?
-    
+        
     
     init(window: UIWindow)
     {
@@ -29,11 +27,9 @@ class CounterCoordinator: Coordinator {
     {
         let storyboard = UIStoryboard(name: "Counter", bundle: nil)
         if let vc = storyboard.instantiateInitialViewController() as? CounterViewController {
-            let viewModel =  CounterViewModel(requiredModel: counterModel!)
+            let viewModel =  CounterViewModel()
             viewModel.delegate = self
             viewModel.viewController = vc
-            viewModel.start()
-//            viewModel.model = counterModel
             vc.viewModel = viewModel
             vc.coordinationDelegate = self
             let nav = UINavigationController.init(rootViewController: vc)

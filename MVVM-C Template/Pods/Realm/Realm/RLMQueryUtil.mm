@@ -30,7 +30,6 @@
 #import "results.hpp"
 
 #include <realm/query_engine.hpp>
-#include <realm/query_expression.hpp>
 #include <realm/util/cf_ptr.hpp>
 
 using namespace realm;
@@ -295,7 +294,7 @@ public:
             case RLMPropertyTypeLinkingObjects:
                 return m_schema[property().objectClassName];
             default:
-                REALM_UNREACHABLE();
+                REALM_ASSERT(false);
         }
     }
 

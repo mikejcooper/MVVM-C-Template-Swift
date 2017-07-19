@@ -137,7 +137,7 @@ public final class Migration {
      - parameter object: An object to be deleted from the Realm being migrated.
      */
     public func delete(_ object: MigrationObject) {
-        rlmMigration.delete(object.unsafeCastToRLMObject())
+        RLMDeleteObjectFromRealm(object, RLMObjectBaseRealm(object)!)
     }
 
     /**

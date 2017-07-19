@@ -22,7 +22,6 @@
 #import "RLMSyncConfiguration_Private.hpp"
 #import "RLMSyncSession_Private.hpp"
 #import "RLMSyncUser_Private.hpp"
-#import "RLMSyncUtil_Private.hpp"
 #import "RLMUtil.hpp"
 
 #import "sync/sync_config.hpp"
@@ -82,13 +81,9 @@ struct CocoaSyncLoggerFactory : public realm::SyncLoggerFactory {
 
 @interface RLMSyncManager ()
 - (instancetype)initWithCustomRootDirectory:(nullable NSURL *)rootDirectory NS_DESIGNATED_INITIALIZER;
-
-@property (nonatomic, nullable, strong) NSNumber *globalSSLValidationDisabled;
 @end
 
 @implementation RLMSyncManager
-
-@synthesize globalSSLValidationDisabled = _globalSSLValidationDisabled;
 
 static RLMSyncManager *s_sharedManager = nil;
 static dispatch_once_t s_onceToken;
@@ -102,8 +97,6 @@ static dispatch_once_t s_onceToken;
 
 - (instancetype)initWithCustomRootDirectory:(NSURL *)rootDirectory {
     if (self = [super init]) {
-        [RLMSyncUser _setUpBindingContextFactory];
-
         // Initialize the sync engine.
         SyncManager::shared().set_logger_factory(s_syncLoggerFactory);
         bool should_encrypt = !getenv("REALM_DISABLE_METADATA_ENCRYPTION") && !RLMIsRunningInPlayground();
@@ -122,26 +115,6 @@ static dispatch_once_t s_onceToken;
     return _appID;
 }
 
-- (NSNumber *)globalSSLValidationDisabled {
-    @synchronized (self) {
-        return _globalSSLValidationDisabled;
-    }
-}
-
-- (void)setGlobalSSLValidationDisabled:(NSNumber *)globalSSLValidationDisabled {
-    @synchronized (self) {
-        _globalSSLValidationDisabled = globalSSLValidationDisabled;
-    }
-}
-
-- (void)setDisableSSLValidation:(BOOL)disableSSLValidation {
-    self.globalSSLValidationDisabled = @(disableSSLValidation);
-}
-
-- (BOOL)disableSSLValidation {
-    return [self.globalSSLValidationDisabled boolValue];
-}
-
 #pragma mark - Passthrough properties
 
 - (RLMSyncLogLevel)logLevel {
@@ -150,6 +123,14 @@ static dispatch_once_t s_onceToken;
 
 - (void)setLogLevel:(RLMSyncLogLevel)logLevel {
     realm::SyncManager::shared().set_log_level(levelForSyncLogLevel(logLevel));
+}
+
+- (BOOL)disableSSLValidation {
+    return realm::SyncManager::shared().client_should_validate_ssl();
+}
+
+- (void)setDisableSSLValidation:(BOOL)disableSSLValidation {
+    realm::SyncManager::shared().set_client_should_validate_ssl(!disableSSLValidation);
 }
 
 #pragma mark - Private API
@@ -169,44 +150,47 @@ static dispatch_once_t s_onceToken;
                   userInfo:(NSDictionary *)userInfo
                 errorClass:(RLMSyncSystemErrorKind)errorClass {
     NSError *error = nil;
-    BOOL shouldMakeError = YES;
-    NSDictionary *custom = nil;
+    NSMutableDictionary *mutableUserInfo = [userInfo mutableCopy];
+    mutableUserInfo[@"description"] = message;
+    mutableUserInfo[@"error"] = @(errorCode);
+    mutableUserInfo[@"underlying_class"] = @(errorClass);
+
     switch (errorClass) {
         case RLMSyncSystemErrorKindClientReset: {
-            // Users can respond to "client reset" errors to a
-            // greater degree than possible for most other errors.
+            // Client reset is a special case; the application can respond to it to a greater degree than
+            // it can for most other errors.
+            mutableUserInfo[kRLMSyncPathOfRealmBackupCopyKey] = userInfo[@(realm::SyncError::c_recovery_file_path_key)];
             std::string original_path = [userInfo[@(realm::SyncError::c_original_file_path_key)] UTF8String];
-            custom = @{kRLMSyncPathOfRealmBackupCopyKey: userInfo[@(realm::SyncError::c_recovery_file_path_key)],
-                       kRLMSyncInitiateClientResetBlockKey: ^{
-                           SyncManager::shared().immediately_run_file_actions(original_path);
-                       }};
-            break;
-        }
-        case RLMSyncSystemErrorKindPermissionDenied: {
-            __block BOOL calledAlready = NO;
-            custom = @{kRLMSyncInitiateDeleteRealmBlockKey: ^ {
-                NSString *originalPath = userInfo[@(realm::SyncError::c_original_file_path_key)];
-                if (calledAlready) {
-                    @throw RLMException(@"The handler block for the Realm at '%@' has already been called once.",
-                                        originalPath);
-                }
-                calledAlready = YES;
-                std::string original_path = [originalPath UTF8String];
+            mutableUserInfo[kRLMSyncInitiateClientResetBlockKey] = ^{
                 SyncManager::shared().immediately_run_file_actions(original_path);
-            }};
+            };
+            error = [NSError errorWithDomain:RLMSyncErrorDomain
+                                        code:RLMSyncErrorClientResetError
+                                    userInfo:mutableUserInfo];
             break;
         }
         case RLMSyncSystemErrorKindUser:
+            error = [NSError errorWithDomain:RLMSyncErrorDomain
+                                        code:RLMSyncErrorClientUserError
+                                    userInfo:mutableUserInfo];
+            break;
         case RLMSyncSystemErrorKindSession:
+            error = [NSError errorWithDomain:RLMSyncErrorDomain
+                                        code:RLMSyncErrorClientSessionError
+                                    userInfo:mutableUserInfo];
             break;
         case RLMSyncSystemErrorKindConnection:
         case RLMSyncSystemErrorKindClient:
-        case RLMSyncSystemErrorKindUnknown:
             // Report the error. There's nothing the user can do about it, though.
-            shouldMakeError = fatal;
+            if (fatal) {
+                error = [NSError errorWithDomain:RLMSyncErrorDomain
+                                            code:RLMSyncErrorClientInternalError
+                                        userInfo:mutableUserInfo];
+            }
+            break;
+        case RLMSyncSystemErrorKindUnknown:
             break;
     }
-    error = shouldMakeError ? make_sync_error(errorClass, message, errorCode, custom) : nil;
     dispatch_async(dispatch_get_main_queue(), ^{
         if (!self.errorHandler || !error) {
             return;

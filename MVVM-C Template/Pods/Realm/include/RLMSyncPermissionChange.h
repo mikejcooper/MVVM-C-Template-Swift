@@ -31,7 +31,6 @@ NS_ASSUME_NONNULL_BEGIN
  See https://realm.io/docs/realm-object-server/#permissions for general
  documentation.
  */
-__deprecated_msg("Use `-[RLMSyncUser applyPermission:callback:]` and `-[RLMSyncUser revokePermission:callback:]`")
 @interface RLMSyncPermissionChange : RLMObject
 
 /// The globally unique ID string of this permission change object.

@@ -9,8 +9,8 @@
 
 import Foundation
 import UIKit
-import RxSwift
-import RxCocoa
+import RxSwift // Binding ViewModel to ViewController : Variable<Type>
+// Binding examples: https://github.com/ReactiveX/RxSwift/blob/master/Documentation/Examples.md
 
 class CounterViewController: UIViewController, Coordinated
 {
@@ -30,12 +30,6 @@ class CounterViewController: UIViewController, Coordinated
             .asObservable()
             .map { $0 }
             .bindTo(self.label.rx.text)
-            .addDisposableTo(self.disposeBag)
-        
-        self.viewModel.persistentLabel
-            .asObservable()
-            .map { $0 }
-            .bindTo(self.persistentLabel.rx.text)
             .addDisposableTo(self.disposeBag)
         
     

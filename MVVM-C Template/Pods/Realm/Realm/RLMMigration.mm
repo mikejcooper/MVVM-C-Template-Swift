@@ -20,7 +20,6 @@
 
 #import "RLMAccessor.h"
 #import "RLMObject_Private.h"
-#import "RLMObject_Private.hpp"
 #import "RLMObjectSchema_Private.hpp"
 #import "RLMObjectStore.h"
 #import "RLMProperty_Private.h"
@@ -56,7 +55,6 @@ using namespace realm;
 
 @implementation RLMMigration {
     realm::Schema *_schema;
-    NSMutableDictionary *deletedObjectIndices;
 }
 
 - (instancetype)initWithRealm:(RLMRealm *)realm oldRealm:(RLMRealm *)oldRealm schema:(realm::Schema &)schema {
@@ -66,7 +64,6 @@ using namespace realm;
         _oldRealm = oldRealm;
         _schema = &schema;
         object_setClass(_oldRealm, RLMMigrationRealm.class);
-        deletedObjectIndices = [NSMutableDictionary dictionary];
     }
     return self;
 }
@@ -85,17 +82,8 @@ using namespace realm;
     RLMResults *oldObjects = [_oldRealm.schema schemaForClassName:className] ? [_oldRealm allObjects:className] : nil;
 
     if (objects && oldObjects) {
-        NSArray *deletedObjects = deletedObjectIndices[className];
-        if (!deletedObjects) {
-            deletedObjects = [NSMutableArray array];
-            deletedObjectIndices[className] = deletedObjects;
-        }
-
         for (long i = oldObjects.count - 1; i >= 0; i--) {
             @autoreleasepool {
-                if ([deletedObjects containsObject:@(i)]) {
-                    continue;
-                }
                 block(oldObjects[i], objects[i]);
             }
         }
@@ -128,7 +116,6 @@ using namespace realm;
         }
 
         block(self, _oldRealm->_realm->schema_version());
-        [self deleteObjectsMarkedForDeletion];
 
         _oldRealm = nil;
         _realm = nil;
@@ -144,17 +131,7 @@ using namespace realm;
 }
 
 - (void)deleteObject:(RLMObject *)object {
-    [deletedObjectIndices[object.objectSchema.className] addObject:@(object->_row.get_index())];
-}
-
-- (void)deleteObjectsMarkedForDeletion {
-    for (NSString *className in deletedObjectIndices.allKeys) {
-        RLMResults *objects = [_realm allObjects:className];
-        for (NSNumber *index in deletedObjectIndices[className]) {
-            RLMObject *object = objects[index.longValue];
-            [_realm deleteObject:object];
-        }
-    }
+    [_realm deleteObject:object];
 }
 
 - (BOOL)deleteDataForClassName:(NSString *)name {

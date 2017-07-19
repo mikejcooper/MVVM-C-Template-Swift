@@ -64,7 +64,6 @@ extension AppCoordinator: HandleSegueDelegate
             let counterCoordinator = CounterCoordinator(window: window)
             coordinators[kCounterCoordinator] = counterCoordinator
             counterCoordinator.delegate = self
-            counterCoordinator.counterModel = dataManager.counterModel
             counterCoordinator.start()
         }
         

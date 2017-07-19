@@ -31,7 +31,6 @@ NS_ASSUME_NONNULL_BEGIN
  See https://realm.io/docs/realm-object-server/#permissions for general
  documentation.
  */
-__deprecated_msg("Use `RLMSyncPermissionValue`")
 @interface RLMSyncPermission : RLMObject
 
 /// The date this object was last modified.

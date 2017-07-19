@@ -20,7 +20,6 @@
 
 #import "RLMSyncConfiguration_Private.hpp"
 #import "RLMSyncUser_Private.hpp"
-#import "RLMSyncUtil_Private.hpp"
 #import "sync/sync_session.hpp"
 
 using namespace realm;
@@ -132,34 +131,28 @@ using namespace realm;
     return RLMSyncSessionStateInvalid;
 }
 
-- (BOOL)waitForUploadCompletionOnQueue:(dispatch_queue_t)queue callback:(void(^)(NSError *))callback {
+- (BOOL)waitForUploadCompletionOnQueue:(dispatch_queue_t)queue callback:(void(^)(void))callback {
     if (auto session = _session.lock()) {
         if (session->state() == SyncSession::PublicState::Error) {
             return NO;
         }
         queue = queue ?: dispatch_get_main_queue();
-        session->wait_for_upload_completion([=](std::error_code err) {
-            NSError *error = (err == std::error_code{}) ? nil : make_sync_error(err);
-            dispatch_async(queue, ^{
-                callback(error);
-            });
+        session->wait_for_upload_completion([=](std::error_code) { // FIXME: report error to user
+            dispatch_async(queue, callback);
         });
         return YES;
     }
     return NO;
 }
 
-- (BOOL)waitForDownloadCompletionOnQueue:(dispatch_queue_t)queue callback:(void(^)(NSError *))callback {
+- (BOOL)waitForDownloadCompletionOnQueue:(dispatch_queue_t)queue callback:(void(^)(void))callback {
     if (auto session = _session.lock()) {
         if (session->state() == SyncSession::PublicState::Error) {
             return NO;
         }
         queue = queue ?: dispatch_get_main_queue();
-        session->wait_for_download_completion([=](std::error_code err) {
-            NSError *error = (err == std::error_code{}) ? nil : make_sync_error(err);
-            dispatch_async(queue, ^{
-                callback(error);
-            });
+        session->wait_for_download_completion([=](std::error_code) { // FIXME: report error to user
+            dispatch_async(queue, callback);
         });
         return YES;
     }

@@ -28,7 +28,7 @@ class HomeCoordinator: Coordinator {
         // Finds initial view controller attached to storyboard
         if let nav = storyboard.instantiateInitialViewController() as? UINavigationController {
             let vc = nav.viewControllers.first as! HomeViewController
-            var viewModel =  HomeViewModel()
+            let viewModel =  HomeViewModel()
             viewModel.delegate = self
             viewModel.viewController = vc
             vc.viewModel = viewModel
@@ -63,7 +63,7 @@ extension HomeCoordinator: CoordinationDelegate {
             let vc = segue.destination as! SettingsViewController
             var viewModel =  SettingsViewModel()
             viewModel.viewController = vc
-            viewModel.delegate = self as? SettingsViewModelDelegate
+            viewModel.delegate = self
             vc.coordinationDelegate = self
             vc.viewModel = viewModel
         }
