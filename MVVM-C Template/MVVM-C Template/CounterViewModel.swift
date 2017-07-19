@@ -51,18 +51,18 @@ class CounterViewModel : NSObject
     }
     
     func start(){
-        let predicate = NSPredicate(format: "id = %@", "userSettings")
-        let model1 = self.realm.objects(CounterModel.self).filter(predicate).first!
-        notificationToken = model1.addNotificationBlock { change in
-            switch change {
-            case .initial(let updated_model):
-                self.updateME.value = String(updated_model.count)
-            case .update(let updated_model, _, _, _):
-                self.updateME.value = String(updated_model.count)
-            case .error(let error):
-                print(error)
-            }
-        }
+//        let predicate = NSPredicate(format: "id = %@", "userSettings")
+//        let model1 = self.realm.objects(CounterModel.self).filter(predicate).first!
+//        notificationToken = model1.addNotificationBlock { change in
+//            switch change {
+//            case .initial(let updated_model):
+//                self.updateME.value = String(updated_model.count)
+//            case .update(let updated_model, _, _, _):
+//                self.updateME.value = String(updated_model.count)
+//            case .error(let error):
+//                print(error)
+//            }
+//        }
     }
     
     
